@@ -11,14 +11,17 @@ svg text,
 	overflow: hidden;
 	resize: both;
 	position: relative;
+	border: 1px solid #ccc;
+
 	width: 500px;
 	height: 600px;
-	min-height: 20px;
-	min-width: 20px;
-	border: 1px solid #ccc;
+	min-width: 150px;
+	min-height: 100px;
+	max-width: 1000px;
+	max-height: 600px;
 }
 
-#svg-overlay {
+/*#svg-overlay {
 	outline: 1px solid #ccc;
 	outline-offset: -1px;
 	width: 100%;
@@ -28,7 +31,7 @@ svg text,
 	position: absolute;
 	top: 0;
 	left: 0;
-}
+}*/
 
 .output td,
 .output th {
