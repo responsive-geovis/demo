@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<title>Responsive Map Example</title>
+		<link rel="stylesheet" href="style.css" />
+
+		<script src="https://d3js.org/d3.v7.min.js"></script>
+		<script src="https://unpkg.com/topojson@3"></script>
+
+		<!-- <script src="responsive-geovis-lib.js"></script> -->
+		<!-- <script src="visModules.js"></script> -->
+	</head>
+	<body>
+		<div>
+			<h1>Responsive Map Example</h1>
+			<p>
+				Resize the container using the handle in the botton right and
+				watch the visualization update.
+			</p>
+		</div>
+		<div>
+			<table class="output">
+				<tr>
+					<th>width</th>
+					<th>height</th>
+					<th>aspect ratio</th>
+					<th>area</th>
+				</tr>
+				<tr>
+					<td><span id="widthOutput"></span>px</td>
+					<td><span id="heightOutput"></span>px</td>
+					<td><span id="arOutput"></span></td>
+					<td><span id="areaOutput"></span>px</td>
+				</tr>
+			</table>
+		</div>
+
+		<div id="container"></div>
+
+		<script type="text/javascript" src="script.js"></script>
+	</body>
+</html>
