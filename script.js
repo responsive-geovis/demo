@@ -4,7 +4,7 @@
 const container = document.querySelector("#container");
 const containerStyles = getComputedStyle(container);
 
-let svg, map, circles;
+let svg, map, circles, r1, r2, simulation;
 
 // check for max width + height, throw error if not set - needed to create svg
 
@@ -48,39 +48,89 @@ let initProjTranslate = projection.translate();
 const path = d3.geoPath(projection);
 
 // data + setup
-d3.json("ne_110m_admin_0_countries_lakes.json").then(function (topo) {
-	// convert topojson to geojson
-	const geo = topojson.feature(
-		topo,
-		topo.objects.ne_110m_admin_0_countries_lakes
-	);
-	console.log(geo);
+d3.json("ne_110m_admin_0_countries_lakes.json")
+	.then(function (topo) {
+		// convert topojson to geojson
+		const geo = topojson.feature(
+			topo,
+			topo.objects.ne_110m_admin_0_countries_lakes
+		);
+		console.log(geo);
 
-	// get centroids
-	geo.features.forEach((feature) => {
-		feature.centroid = centroid(feature);
-		return feature;
-	});
+		// get centroids
+		geo.features.forEach((feature) => {
+			feature.centroid = centroid(feature);
+			return feature;
+		});
 
-	console.log(
-		"min population:",
-		d3.min(geo.features, (d) => d.properties.POP_EST),
-		"max population:",
-		d3.max(geo.features, (d) => d.properties.POP_EST)
-	);
+		// circle radius for prop circle map
+		r1 = d3
+			.scaleSqrt()
+			.domain([0, d3.max(geo.features, (d) => d.properties.POP_EST)])
+			.range([0, Math.sqrt(maxW * maxH) / 10]);
+		// circle radius for Dorling/packed circles (slightly bigger)
+		r2 = d3
+			.scaleSqrt()
+			.domain([0, d3.max(geo.features, (d) => d.properties.POP_EST)])
+			.range([0, Math.sqrt(maxW * maxH) / 12]);
 
-	// draw map
-	map.selectAll(".country")
-		.data(geo.features)
-		.enter()
-		.append("path")
-		.attr("class", "country")
-		.attr("d", path)
-		.attr("fill", "#f5f5f5")
-		.attr("stroke", "#e0e0e0");
-});
+		// get Dorling cartogram positions
+		// adds/updates d.x and d.y
+		simulation = d3
+			.forceSimulation(geo.features)
+			.force(
+				"x",
+				d3.forceX((d) => projection(d.centroid)[0])
+			)
+			.force(
+				"y",
+				d3.forceY((d) => projection(d.centroid)[1])
+			)
+			.force(
+				"collide",
+				d3.forceCollide((d) => 1 + r2(d.properties.POP_EST))
+			)
+			.stop();
 
-resizeObserver(container);
+		simulation.tick(200);
+		geo.features.forEach(function (d) {
+			d.dorlingX = d.x;
+			d.dorlingY = d.y;
+		});
+
+		console.log(geo.features);
+
+		console.log(
+			"min population:",
+			d3.min(geo.features, (d) => d.properties.POP_EST),
+			"max population:",
+			d3.max(geo.features, (d) => d.properties.POP_EST)
+		);
+
+		// draw map
+		map.selectAll(".country")
+			.data(geo.features)
+			.enter()
+			.append("path")
+			.attr("class", "country")
+			.attr("d", path)
+			.attr("fill", "#f5f5f5")
+			.attr("stroke", "#e0e0e0");
+
+		// draw circles
+		circles
+			.selectAll("circle")
+			.data(geo.features)
+			.enter()
+			.append("circle")
+			.attr("fill", "steelblue")
+			.attr("fill-opacity", 0.3)
+			.attr("stroke", "steelblue");
+		// r, cx, cy set in resizer function below
+	})
+	.then(() => resizeObserver(container));
+
+// resizeObserver(container);
 
 function resizeObserver(container) {
 	const divElem = container;
@@ -102,13 +152,67 @@ function resizeObserver(container) {
 				d3.select("#arOutput").html(Math.round((w / h) * 100) / 100);
 				d3.select("#areaOutput").html(Math.round(w * h));
 
-				// resize map
-				const scale =
+				// update these with more complex conditions
+				let conditions1 = w > 700;
+				let conditions2 = w > 400;
+				// need to do some getter setter magic to get conditions to recognise previous states
+
+				console.log;
+
+				// get scale factor
+				const k =
 					mapAR > w / h ? w / mapInitSize[0] : h / mapInitSize[1];
-				// show + scale base map, update stroke width
-				map.attr("display", "")
-					.attr("transform", `scale(${scale})`)
-					.attr("stroke-width", `${1 / scale}px`);
+
+				// large version
+				if (conditions1) {
+					// show + scale base map, update stroke width
+					map.attr("display", "")
+						.attr("transform", `scale(${k})`)
+						.attr("stroke-width", `${1 / k}px`);
+					// if simulation is running, stop it
+					simulation.stop();
+					// rescale + move circles
+					circles
+						.selectAll("circle")
+						.attr("r", (d) => k * r1(d.properties.POP_EST))
+						.attr("cx", (d) => k * projection(d.centroid)[0])
+						.attr("cy", (d) => k * projection(d.centroid)[1]);
+				} else if (conditions2) {
+					// 'stable' Dorling
+					// hide base map
+					map.attr("display", "none");
+					// if simulation is running, stop it
+					simulation.stop();
+					// rescale + move circles to scaled Dorling positions
+					circles
+						.selectAll("circle")
+						.attr("r", (d) => k * r2(d.properties.POP_EST))
+						.attr("cx", (d) => k * d.dorlingX)
+						.attr("cy", (d) => k * d.dorlingY);
+				} else {
+					// constantly updating circle packing
+					// scale inconsiderate of map ratio:
+					let s = Math.sqrt((w * h) / 90000); // ??
+					// hide base map
+					map.attr("display", "none");
+					// keep simulation running constantly
+					simulation.restart();
+					circles
+						.selectAll("circle")
+						.attr("r", (d) => s * r2(d.properties.POP_EST))
+						.attr("cx", function (d) {
+							return (d.x = Math.max(
+								s * r2(d.properties.POP_EST),
+								Math.min(w - s * r2(d.properties.POP_EST), d.x)
+							));
+						})
+						.attr("cy", function (d) {
+							return (d.y = Math.max(
+								s * r2(d.properties.POP_EST),
+								Math.min(h - s * r2(d.properties.POP_EST), d.y)
+							));
+						});
+				}
 				// update vis
 				// check in order of priority if constraints are fulfilled
 				// for (let i = 0; i < params.visTypes.length; i++) {
