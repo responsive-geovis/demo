@@ -4,7 +4,7 @@
 const container = document.querySelector("#container");
 const containerStyles = getComputedStyle(container);
 
-let svg, map, circles, r1, r2, simulation;
+let svg, layerMap, layerCircles, map, circles, r1, r2, simulation;
 
 // check for max width + height, throw error if not set - needed to create svg
 
@@ -21,12 +21,12 @@ if (maxW && maxH) {
 		.attr("height", maxH);
 
 	// add g elements for the different layers
-	map = d3
+	layerMap = d3
 		.select("#svg")
 		.append("g")
 		.attr("id", "map")
 		.attr("class", "layer");
-	circles = d3
+	layerCircles = d3
 		.select("#svg")
 		.append("g")
 		.attr("id", "circles")
@@ -76,7 +76,7 @@ d3.json("ne_110m_admin_0_countries_lakes.json")
 
 		// get Dorling cartogram positions
 		// adds/updates d.x and d.y
-		simulation = d3
+		let dorlingSimulation = d3
 			.forceSimulation(geo.features)
 			.force(
 				"x",
@@ -91,12 +91,27 @@ d3.json("ne_110m_admin_0_countries_lakes.json")
 				d3.forceCollide((d) => 1 + r2(d.properties.POP_EST))
 			)
 			.stop();
-
-		simulation.tick(200);
+		dorlingSimulation.tick(200);
 		geo.features.forEach(function (d) {
 			d.dorlingX = d.x;
 			d.dorlingY = d.y;
 		});
+
+		// new simulation to be used for live updates
+		simulation = d3
+			.forceSimulation(geo.features)
+			.force(
+				"x",
+				d3.forceX((d) => projection(d.centroid)[0])
+			)
+			.force(
+				"y",
+				d3.forceY((d) => projection(d.centroid)[1])
+			)
+			.force(
+				"collide",
+				d3.forceCollide((d) => 1 + r2(d.properties.POP_EST))
+			);
 
 		console.log(geo.features);
 
@@ -108,7 +123,8 @@ d3.json("ne_110m_admin_0_countries_lakes.json")
 		);
 
 		// draw map
-		map.selectAll(".country")
+		map = layerMap
+			.selectAll(".country")
 			.data(geo.features)
 			.enter()
 			.append("path")
@@ -118,7 +134,7 @@ d3.json("ne_110m_admin_0_countries_lakes.json")
 			.attr("stroke", "#e0e0e0");
 
 		// draw circles
-		circles
+		circles = layerCircles
 			.selectAll("circle")
 			.data(geo.features)
 			.enter()
@@ -166,26 +182,25 @@ function resizeObserver(container) {
 				// large version
 				if (conditions1) {
 					// show + scale base map, update stroke width
-					map.attr("display", "")
+					layerMap
+						.attr("display", "")
 						.attr("transform", `scale(${k})`)
 						.attr("stroke-width", `${1 / k}px`);
 					// if simulation is running, stop it
 					simulation.stop();
 					// rescale + move circles
 					circles
-						.selectAll("circle")
 						.attr("r", (d) => k * r1(d.properties.POP_EST))
 						.attr("cx", (d) => k * projection(d.centroid)[0])
 						.attr("cy", (d) => k * projection(d.centroid)[1]);
 				} else if (conditions2) {
 					// 'stable' Dorling
 					// hide base map
-					map.attr("display", "none");
+					layerMap.attr("display", "none");
 					// if simulation is running, stop it
 					simulation.stop();
 					// rescale + move circles to scaled Dorling positions
 					circles
-						.selectAll("circle")
 						.attr("r", (d) => k * r2(d.properties.POP_EST))
 						.attr("cx", (d) => k * d.dorlingX)
 						.attr("cy", (d) => k * d.dorlingY);
@@ -194,39 +209,36 @@ function resizeObserver(container) {
 					// scale inconsiderate of map ratio:
 					let s = Math.sqrt((w * h) / 90000); // ??
 					// hide base map
-					map.attr("display", "none");
+					layerMap.attr("display", "none");
 					// keep simulation running constantly
+					simulation.on("tick", tick);
 					simulation.restart();
-					circles
-						.selectAll("circle")
-						.attr("r", (d) => s * r2(d.properties.POP_EST))
-						.attr("cx", function (d) {
-							return (d.x = Math.max(
-								s * r2(d.properties.POP_EST),
-								Math.min(w - s * r2(d.properties.POP_EST), d.x)
-							));
-						})
-						.attr("cy", function (d) {
-							return (d.y = Math.max(
-								s * r2(d.properties.POP_EST),
-								Math.min(h - s * r2(d.properties.POP_EST), d.y)
-							));
-						});
-				}
-				// update vis
-				// check in order of priority if constraints are fulfilled
-				// for (let i = 0; i < params.visTypes.length; i++) {
-				// 	let vis = params.visTypes[i];
-				// 	if (resizers[vis].constraintCheck({ x: w, y: h })) {
-				// 		displayVis(vis);
-				// 		resizers[vis].resize({ x: w, y: h });
-				// 		break;
-				// 	}
-				// }
 
-				// resizeVis({ x: w, y: h }, params);
-				// var vis = "choropleth";
-				// resizers[vis]({ x: w, y: h }, params);
+					function tick() {
+						console.log("tick");
+
+						circles
+							.attr("r", (d) => s * r2(d.properties.POP_EST))
+							.attr("cx", function (d) {
+								return (d.x = Math.max(
+									s * r2(d.properties.POP_EST),
+									Math.min(
+										w - s * r2(d.properties.POP_EST),
+										d.x
+									)
+								));
+							})
+							.attr("cy", function (d) {
+								return (d.y = Math.max(
+									s * r2(d.properties.POP_EST),
+									Math.min(
+										h - s * r2(d.properties.POP_EST),
+										d.y
+									)
+								));
+							});
+					}
+				}
 			} else {
 				// need to figure out why this part is necessary?? does contentBoxSize not always exist?
 				// h1Elem.style.fontSize = Math.max(1.5, entry.contentRect.width / 200) + 'rem';
