@@ -67,12 +67,12 @@ d3.json("ne_110m_admin_0_countries_lakes.json")
 		r1 = d3
 			.scaleSqrt()
 			.domain([0, d3.max(geo.features, (d) => d.properties.POP_EST)])
-			.range([0, Math.sqrt(maxW * maxH) / 10]);
+			.range([0, Math.sqrt(maxW * maxH) / 13]);
 		// circle radius for Dorling/packed circles (slightly bigger)
 		r2 = d3
 			.scaleSqrt()
 			.domain([0, d3.max(geo.features, (d) => d.properties.POP_EST)])
-			.range([0, Math.sqrt(maxW * maxH) / 12]);
+			.range([0, Math.sqrt(maxW * maxH) / 10]);
 
 		// get Dorling cartogram positions
 		// adds/updates d.x and d.y
@@ -143,12 +143,17 @@ d3.json("ne_110m_admin_0_countries_lakes.json")
 			.attr("fill-opacity", 0.3)
 			.attr("stroke", "steelblue");
 		// r, cx, cy set in resizer function below
+
+		return geo;
 	})
-	.then(() => resizeObserver(container));
+	// .then(() => resizeObserver(container));
+	.then(function (geo) {
+		resizeObserver(container, geo);
+	});
 
 // resizeObserver(container);
 
-function resizeObserver(container) {
+function resizeObserver(container, geo) {
 	const divElem = container;
 
 	const resizeObserver = new ResizeObserver((entries) => {
@@ -159,8 +164,8 @@ function resizeObserver(container) {
 					? entry.contentBoxSize[0]
 					: entry.contentBoxSize;
 
-				var w = contentBoxSize.inlineSize;
-				var h = contentBoxSize.blockSize;
+				const w = contentBoxSize.inlineSize;
+				const h = contentBoxSize.blockSize;
 
 				// update info table
 				d3.select("#widthOutput").html(Math.round(w));
@@ -168,19 +173,35 @@ function resizeObserver(container) {
 				d3.select("#arOutput").html(Math.round((w / h) * 100) / 100);
 				d3.select("#areaOutput").html(Math.round(w * h));
 
-				// update these with more complex conditions
-				let conditions1 = w > 700;
-				let conditions2 = w > 400;
-				// need to do some getter setter magic to get conditions to recognise previous states
-
-				console.log;
-
 				// get scale factor
 				const k =
 					mapAR > w / h ? w / mapInitSize[0] : h / mapInitSize[1];
 
-				// large version
-				if (conditions1) {
+				// calculate some things for conditions
+				// mapAR is a const
+				let containerAR = w / h;
+				let pop_vals = geo.features.map((d) => d.properties.POP_EST);
+				let lower_bound = pop_vals.sort((a, b) => a > b)[
+					Math.floor(pop_vals.length * 0.1)
+				];
+				// console.log(pop_vals, lower_bound);
+				// console.log(
+				// 	"AR Diff: ",
+				// 	containerAR / mapAR,
+				// 	"r1: ",
+				// 	r1(lower_bound),
+				// 	"r2: ",
+				// 	r2(lower_bound)
+				// );
+
+				// conditions for prop circle map
+				if (
+					// min r - at least 10% of circles visible
+					r1(lower_bound) * k > 1 &&
+					// aspect ratio difference - no more than 1/3 white space
+					containerAR / mapAR >= 0.67 &&
+					containerAR / mapAR <= 1.5
+				) {
 					// show + scale base map, update stroke width
 					layerMap
 						.attr("display", "")
@@ -193,7 +214,13 @@ function resizeObserver(container) {
 						.attr("r", (d) => k * r1(d.properties.POP_EST))
 						.attr("cx", (d) => k * projection(d.centroid)[0])
 						.attr("cy", (d) => k * projection(d.centroid)[1]);
-				} else if (conditions2) {
+				} else if (
+					// min r - at least 10% of circles visible
+					r2(lower_bound) * k > 1 &&
+					// aspect ratio difference - no more than 1/3 white space
+					containerAR / mapAR >= 0.67 &&
+					containerAR / mapAR <= 1.5
+				) {
 					// 'stable' Dorling
 					// hide base map
 					layerMap.attr("display", "none");
