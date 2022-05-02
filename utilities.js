@@ -1,7 +1,7 @@
 // Centroid of features, to place circles at
-function centroid(feature) {
-  // Find the centroid of the largest polygon
-  // Source: https://observablehq.com/d/47c257e62a34b61d
+// from https://observablehq.com/@harrystevens/dorling-cartogram
+// Find the centroid of the largest polygon
+centroid = (feature) => {
   const geometry = feature.geometry;
   if (geometry.type === "Polygon") {
     return d3.geoCentroid(feature);
@@ -18,7 +18,7 @@ function centroid(feature) {
     });
     return d3.geoCentroid(largestPolygon);
   }
-}
+};
 
 // Circle Legend
 // from https://observablehq.com/@harrystevens/circle-legend
