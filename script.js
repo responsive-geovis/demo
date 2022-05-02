@@ -342,25 +342,3 @@ function resizeObserver(container, geo) {
 
 	resizeObserver.observe(divElem);
 }
-
-// Utilities for bubble charts
-function centroid(feature) {
-	// Find the centroid of the largest polygon
-	// Source: https://observablehq.com/d/47c257e62a34b61d
-	const geometry = feature.geometry;
-	if (geometry.type === "Polygon") {
-		return d3.geoCentroid(feature);
-	} else {
-		let largestPolygon = {},
-			largestArea = 0;
-		geometry.coordinates.forEach((coordinates) => {
-			const polygon = { type: "Polygon", coordinates },
-				area = d3.geoArea(polygon);
-			if (area > largestArea) {
-				largestPolygon = polygon;
-				largestArea = area;
-			}
-		});
-		return d3.geoCentroid(largestPolygon);
-	}
-}
