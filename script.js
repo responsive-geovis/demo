@@ -4,7 +4,18 @@
 const container = document.querySelector("#container");
 const containerStyles = getComputedStyle(container);
 
-let svg, layerMap, layerCircles, map, circles, r1, r2, simulation;
+let svg,
+	layerMap,
+	layerCircles,
+	layerLegend1,
+	layerLegend2,
+	map,
+	circles,
+	legend1,
+	legend2,
+	r1,
+	r2,
+	simulation;
 
 // check for max width + height, throw error if not set - needed to create svg
 
@@ -30,6 +41,16 @@ if (maxW && maxH) {
 		.select("#svg")
 		.append("g")
 		.attr("id", "circles")
+		.attr("class", "layer");
+	layerLegend1 = d3
+		.select("#svg")
+		.append("g")
+		.attr("id", "legend1")
+		.attr("class", "layer");
+	layerLegend2 = d3
+		.select("#svg")
+		.append("g")
+		.attr("id", "legend2")
 		.attr("class", "layer");
 } else {
 	throw "Container needs to have max-width and max-height set.";
@@ -144,6 +165,34 @@ d3.json("ne_110m_admin_0_countries_lakes.json")
 			.attr("stroke", "steelblue");
 		// r, cx, cy set in resizer function below
 
+		// legend
+		// let n = d3.format(".2s");
+		let labels = ["1 million", "100 million", "500 million", "1 billion"];
+		let tickvals = [1000000, 100000000, 500000000, 1000000000];
+		let circleLegend1 = legendCircle()
+			.scale(r1)
+			.tickValues(tickvals)
+			.tickFormat(
+				(d, i, e) => labels[i]
+				// do this to add label to last one
+				// i === e.length - 1 ? d + " bushels of hay" : d
+			)
+			.tickSize(5); // defaults to 5
+		let circleLegend2 = legendCircle()
+			.scale(r2)
+			.tickValues(tickvals)
+			.tickFormat((d, i, e) => labels[i])
+			.tickSize(5); // defaults to 5
+
+		legend1 = layerLegend1
+			.append("g")
+			.attr("transform", "translate(15,400)")
+			.call(circleLegend1);
+		legend2 = layerLegend2
+			.append("g")
+			.attr("transform", "translate(15,375)")
+			.call(circleLegend2);
+
 		return geo;
 	})
 	// .then(() => resizeObserver(container));
@@ -214,6 +263,14 @@ function resizeObserver(container, geo) {
 						.attr("r", (d) => k * r1(d.properties.POP_EST))
 						.attr("cx", (d) => k * projection(d.centroid)[0])
 						.attr("cy", (d) => k * projection(d.centroid)[1]);
+					// rescale legend
+					layerLegend1
+						.attr("display", "")
+						.attr("transform", `scale(${k})`);
+					layerLegend1.selectAll("text").attr("font-size", 11 / k);
+					layerLegend2.attr("display", "none");
+					// text size update
+					// .attr("stroke-width", `${1 / k}px`);
 				} else if (
 					// min r - at least 10% of circles visible
 					r2(lower_bound) * k > 1 &&
@@ -231,12 +288,21 @@ function resizeObserver(container, geo) {
 						.attr("r", (d) => k * r2(d.properties.POP_EST))
 						.attr("cx", (d) => k * d.dorlingX)
 						.attr("cy", (d) => k * d.dorlingY);
+					// rescale legend
+					layerLegend2
+						.attr("display", "")
+						.attr("transform", `scale(${k})`);
+					layerLegend2.selectAll("text").attr("font-size", 11 / k);
+					layerLegend1.attr("display", "none");
 				} else {
 					// constantly updating circle packing
 					// scale inconsiderate of map ratio:
 					let s = Math.sqrt((w * h) / 90000); // ??
 					// hide base map
 					layerMap.attr("display", "none");
+					// hide legends
+					layerLegend1.attr("display", "none");
+					layerLegend2.attr("display", "none");
 					// keep simulation running constantly
 					simulation.on("tick", tick);
 					simulation.restart();
