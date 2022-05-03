@@ -156,23 +156,11 @@ Promise.all([
 			d.properties.dorlingY = d.y;
 		});
 
-		// new simulation to be used for live updates
+		// separate simulation for circle packing
 		simulation = d3
 			.forceSimulation(geo.features)
-			.force(
-				"x",
-				d3.forceX((d) => projection(d.properties.centroid)[0])
-			)
-			.force(
-				"y",
-				d3.forceY((d) => projection(d.properties.centroid)[1])
-			)
-			.force(
-				"collide",
-				d3.forceCollide((d) => 1 + r2(d.properties.POP_EST))
-			);
-
-		console.log(geo.features);
+			// 400 iterations
+			.alphaDecay(1 - Math.pow(0.001, 1 / 400));
 
 		// draw map
 		map = layerMap
@@ -335,20 +323,51 @@ function resizeObserver(container, geo) {
 					layerLegend1.attr("display", "none");
 				} else {
 					// constantly updating circle packing
-					// scale inconsiderate of map ratio:
-					let s = Math.sqrt((w * h) / 90000); // ??
+					let r = d3
+						.scaleSqrt()
+						.domain([
+							0,
+							d3.max(geo.features, (d) => d.properties.POP_EST),
+						])
+						.range([
+							0,
+							d3.min([Math.sqrt(w * h) / 5, w / 2, h / 2]),
+						]);
+
 					// hide base map
 					layerMap.attr("display", "none");
 					// hide legends
 					layerLegend1.attr("display", "none");
 					layerLegend2.attr("display", "none");
 					// keep simulation running constantly
-					simulation.on("tick", tick);
-					simulation.restart();
+					// forces depend on container
+					simulation
+						.force(
+							"x",
+							d3.forceX(
+								(d) =>
+									(w / maxW) *
+									projection(d.properties.centroid)[0]
+							)
+						)
+						.force(
+							"y",
+							d3.forceY(
+								(d) =>
+									(h / maxH) *
+									projection(d.properties.centroid)[1]
+							)
+						)
+						.force(
+							"collide",
+							d3.forceCollide((d) => 1 + r(d.properties.POP_EST))
+						)
+						.on("tick", tick)
+						.alpha(1)
+						.restart();
 
 					function tick() {
 						console.log("tick");
-
 						circles
 							.attr("fill", (d) =>
 								colorContinent(d.properties.continent)
@@ -356,23 +375,17 @@ function resizeObserver(container, geo) {
 							.attr("stroke", (d) =>
 								colorContinent(d.properties.continent)
 							)
-							.attr("r", (d) => s * r2(d.properties.POP_EST))
+							.attr("r", (d) => r(d.properties.POP_EST))
 							.attr("cx", function (d) {
 								return (d.x = Math.max(
-									s * r2(d.properties.POP_EST),
-									Math.min(
-										w - s * r2(d.properties.POP_EST),
-										d.x
-									)
+									r(d.properties.POP_EST),
+									Math.min(w - r(d.properties.POP_EST), d.x)
 								));
 							})
 							.attr("cy", function (d) {
 								return (d.y = Math.max(
-									s * r2(d.properties.POP_EST),
-									Math.min(
-										h - s * r2(d.properties.POP_EST),
-										d.y
-									)
+									r(d.properties.POP_EST),
+									Math.min(h - r(d.properties.POP_EST), d.y)
 								));
 							});
 					}

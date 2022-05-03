@@ -15,8 +15,8 @@ svg text,
 
 	width: 1000px;
 	height: 600px;
-	min-width: 150px;
-	min-height: 100px;
+	min-width: 25px;
+	min-height: 25px;
 	max-width: 1000px;
 	max-height: 600px;
 }
