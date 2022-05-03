@@ -17,7 +17,32 @@ let svg,
 	r2,
 	simulation;
 
-const circleColour = "#D9632B"; //"#C53838";
+// color for all circles
+const circleColor = "#D9632B"; //"#C53838";
+// colors for circles colored by continent
+const continents = [
+	"Africa",
+	"Antarctica",
+	"Asia",
+	"Europe",
+	"North America",
+	"Oceania",
+	"South America",
+];
+// ColorBrewer 6-class Set1 plus grey (#bbb)
+const continent_colors = [
+	"#e41a1c",
+	"#bbb",
+	"#377eb8",
+	"#4daf4a",
+	"#984ea3",
+	"#ff7f00",
+	"#ffff33",
+];
+const colorContinent = d3
+	.scaleOrdinal()
+	.domain(continents)
+	.range(continent_colors);
 
 // check for max width + height, throw error if not set - needed to create svg
 
@@ -71,8 +96,15 @@ let initProjTranslate = projection.translate();
 const path = d3.geoPath(projection);
 
 // data + setup
-d3.json("ne_110m_admin_0_countries_lakes.json")
-	.then(function (topo) {
+Promise.all([
+	d3.json("ne_110m_admin_0_countries_lakes.json"),
+	d3.csv("continents.csv"),
+])
+	// d3.json("ne_110m_admin_0_countries_lakes.json")
+	.then(function (data) {
+		let topo = data[0];
+		let continents_list = data[1];
+		console.log(data);
 		// convert topojson to geojson
 		const geo = topojson.feature(
 			topo,
@@ -80,9 +112,13 @@ d3.json("ne_110m_admin_0_countries_lakes.json")
 		);
 		console.log(geo);
 
-		// get centroids
+		// get centroids + add continent
 		geo.features.forEach((feature) => {
-			feature.centroid = centroid(feature);
+			feature.properties.centroid = centroid(feature);
+			// console.log(feature.properties.ISO_A3);
+			feature.properties.continent = continents_list.find(
+				(d) => d.iso == feature.properties.ISO_A3
+			).continent;
 			return feature;
 		});
 
@@ -103,11 +139,11 @@ d3.json("ne_110m_admin_0_countries_lakes.json")
 			.forceSimulation(geo.features)
 			.force(
 				"x",
-				d3.forceX((d) => projection(d.centroid)[0])
+				d3.forceX((d) => projection(d.properties.centroid)[0])
 			)
 			.force(
 				"y",
-				d3.forceY((d) => projection(d.centroid)[1])
+				d3.forceY((d) => projection(d.properties.centroid)[1])
 			)
 			.force(
 				"collide",
@@ -116,8 +152,8 @@ d3.json("ne_110m_admin_0_countries_lakes.json")
 			.stop();
 		dorlingSimulation.tick(200);
 		geo.features.forEach(function (d) {
-			d.dorlingX = d.x;
-			d.dorlingY = d.y;
+			d.properties.dorlingX = d.x;
+			d.properties.dorlingY = d.y;
 		});
 
 		// new simulation to be used for live updates
@@ -125,11 +161,11 @@ d3.json("ne_110m_admin_0_countries_lakes.json")
 			.forceSimulation(geo.features)
 			.force(
 				"x",
-				d3.forceX((d) => projection(d.centroid)[0])
+				d3.forceX((d) => projection(d.properties.centroid)[0])
 			)
 			.force(
 				"y",
-				d3.forceY((d) => projection(d.centroid)[1])
+				d3.forceY((d) => projection(d.properties.centroid)[1])
 			)
 			.force(
 				"collide",
@@ -155,10 +191,8 @@ d3.json("ne_110m_admin_0_countries_lakes.json")
 			.data(geo.features)
 			.enter()
 			.append("circle")
-			.attr("fill", circleColour)
-			.attr("fill-opacity", 0.3)
-			.attr("stroke", circleColour);
-		// r, cx, cy set in resizer function below
+			.attr("fill-opacity", 0.3);
+		// fill, stroke, r, cx, cy set in resizer function below
 
 		// legend
 		// let n = d3.format(".2s");
@@ -255,9 +289,17 @@ function resizeObserver(container, geo) {
 					simulation.stop();
 					// rescale + move circles
 					circles
+						.attr("fill", circleColor)
+						.attr("stroke", circleColor)
 						.attr("r", (d) => k * r1(d.properties.POP_EST))
-						.attr("cx", (d) => k * projection(d.centroid)[0])
-						.attr("cy", (d) => k * projection(d.centroid)[1]);
+						.attr(
+							"cx",
+							(d) => k * projection(d.properties.centroid)[0]
+						)
+						.attr(
+							"cy",
+							(d) => k * projection(d.properties.centroid)[1]
+						);
 					// rescale legend
 					layerLegend1
 						.attr("display", "")
@@ -280,9 +322,11 @@ function resizeObserver(container, geo) {
 					simulation.stop();
 					// rescale + move circles to scaled Dorling positions
 					circles
+						.attr("fill", circleColor)
+						.attr("stroke", circleColor)
 						.attr("r", (d) => k * r2(d.properties.POP_EST))
-						.attr("cx", (d) => k * d.dorlingX)
-						.attr("cy", (d) => k * d.dorlingY);
+						.attr("cx", (d) => k * d.properties.dorlingX)
+						.attr("cy", (d) => k * d.properties.dorlingY);
 					// rescale legend
 					layerLegend2
 						.attr("display", "")
@@ -306,6 +350,12 @@ function resizeObserver(container, geo) {
 						console.log("tick");
 
 						circles
+							.attr("fill", (d) =>
+								colorContinent(d.properties.continent)
+							)
+							.attr("stroke", (d) =>
+								colorContinent(d.properties.continent)
+							)
 							.attr("r", (d) => s * r2(d.properties.POP_EST))
 							.attr("cx", function (d) {
 								return (d.x = Math.max(
