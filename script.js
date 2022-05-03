@@ -17,6 +17,8 @@ let svg,
 	r2,
 	simulation;
 
+const circleColour = "#D9632B"; //"#C53838";
+
 // check for max width + height, throw error if not set - needed to create svg
 
 let maxW = parseInt(containerStyles["max-width"]);
@@ -136,13 +138,6 @@ d3.json("ne_110m_admin_0_countries_lakes.json")
 
 		console.log(geo.features);
 
-		console.log(
-			"min population:",
-			d3.min(geo.features, (d) => d.properties.POP_EST),
-			"max population:",
-			d3.max(geo.features, (d) => d.properties.POP_EST)
-		);
-
 		// draw map
 		map = layerMap
 			.selectAll(".country")
@@ -160,9 +155,9 @@ d3.json("ne_110m_admin_0_countries_lakes.json")
 			.data(geo.features)
 			.enter()
 			.append("circle")
-			.attr("fill", "steelblue")
+			.attr("fill", circleColour)
 			.attr("fill-opacity", 0.3)
-			.attr("stroke", "steelblue");
+			.attr("stroke", circleColour);
 		// r, cx, cy set in resizer function below
 
 		// legend
