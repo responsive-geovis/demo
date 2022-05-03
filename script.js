@@ -262,7 +262,7 @@ function resizeObserver(container, geo) {
 
 				// conditions for prop circle map
 				if (
-					// min r - at least 10% of circles visible
+					// min r - at least 90% of circles visible
 					r1(lower_bound) * k > 1 &&
 					// aspect ratio difference - no more than 1/3 white space
 					containerAR / mapAR >= 0.67 &&
@@ -294,10 +294,8 @@ function resizeObserver(container, geo) {
 						.attr("transform", `scale(${k})`);
 					layerLegend1.selectAll("text").attr("font-size", 11 / k);
 					layerLegend2.attr("display", "none");
-					// text size update
-					// .attr("stroke-width", `${1 / k}px`);
 				} else if (
-					// min r - at least 10% of circles visible
+					// min r - at least 90% of circles visible
 					r2(lower_bound) * k > 1 &&
 					// aspect ratio difference - no more than 1/3 white space
 					containerAR / mapAR >= 0.67 &&

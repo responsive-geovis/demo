@@ -1,3 +1,5 @@
+"use strict";
+
 // Centroid of features, to place circles at
 // from https://observablehq.com/@harrystevens/dorling-cartogram
 // Find the centroid of the largest polygon
