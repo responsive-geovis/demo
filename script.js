@@ -247,7 +247,7 @@ function resizeObserver(container, geo) {
 				// mapAR is a const
 				let containerAR = w / h;
 				let pop_vals = geo.features.map((d) => d.properties.POP_EST);
-				let lower_bound = pop_vals.sort((a, b) => a > b)[
+				let lower_bound = pop_vals.sort((a, b) => a - b)[
 					Math.floor(pop_vals.length * 0.1)
 				];
 				// console.log(pop_vals, lower_bound);
