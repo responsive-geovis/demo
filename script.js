@@ -37,7 +37,7 @@ const continent_colors = [
 	"#4daf4a",
 	"#984ea3",
 	"#ff7f00",
-	"#ffff33",
+	"#FFE600",
 ];
 const colorContinent = d3
 	.scaleOrdinal()
@@ -153,7 +153,7 @@ Promise.all([
 		dorlingSimulation.tick(200);
 		geo.features.forEach(function (d) {
 			d.properties.dorlingX = d.x;
-			d.properties.dorlingY = d.y;
+			d.properties.dorlingY = d.y + 30;
 		});
 
 		// separate simulation for circle packing
