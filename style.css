@@ -43,3 +43,10 @@ li {
 	display: inline-block;
 	width: 150px;
 }
+
+#tooltip {
+	font-size: 12px;
+	text-anchor: middle;
+	dominant-baseline: central;
+	pointer-events: none;
+}

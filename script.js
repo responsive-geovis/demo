@@ -9,6 +9,7 @@ let svg,
 	layerCircles,
 	layerLegend1,
 	layerLegend2,
+	tooltip,
 	map,
 	circles,
 	legend1,
@@ -79,6 +80,7 @@ if (maxW && maxH) {
 		.append("g")
 		.attr("id", "legend2")
 		.attr("class", "layer");
+	tooltip = d3.select("#svg").append("text").attr("id", "tooltip");
 } else {
 	throw "Container needs to have max-width and max-height set.";
 }
@@ -179,7 +181,16 @@ Promise.all([
 			.data(geo.features)
 			.enter()
 			.append("circle")
-			.attr("fill-opacity", 0.3);
+			.attr("fill-opacity", 0.3)
+			.on("mouseover", function (d) {
+				d3.select("#tooltip")
+					.attr("x", d3.select(this).attr("cx"))
+					.attr("y", d3.select(this).attr("cy"))
+					.text(d.originalTarget.__data__.properties.ADMIN);
+			})
+			.on("mouseout", function () {
+				d3.select("#tooltip").attr("x", -100).attr("y", -100);
+			});
 		// fill, stroke, r, cx, cy set in resizer function below
 
 		// legend
