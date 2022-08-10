@@ -5,182 +5,6 @@
 // different vis modules can be added to this object
 const visModules = {};
 
-visModules.bubble = function (container, params) {
-	console.log("drawing bubbles");
-
-	// create g for bubble vis
-	const g = container
-		.select("#svg")
-		.append("g")
-		.attr("id", "bubble")
-		.attr("class", "visType");
-
-	const projection = params.projection;
-
-	let initProjScale;
-	let initProjTranslate;
-	let simulation;
-
-	const topo = params.data;
-	// console.log(topo);
-
-	// convert topojson to geojson
-	const geo = topojson.feature(
-		topo,
-		topo.objects.ne_110m_admin_0_countries_lakes
-	);
-
-	// projection + path
-	const mapAR = 1.884; // aspect ratio of map
-	const mapInitSize =
-		params.initSize.w / params.initSize.h < mapAR
-			? [params.initSize.w, params.initSize.w / mapAR]
-			: [params.initSize.h * mapAR, params.initSize.h];
-	projection.fitSize(mapInitSize, {
-		type: "Sphere",
-	});
-	initProjScale = projection.scale();
-	initProjTranslate = projection.translate();
-
-	const path = d3.geoPath(projection);
-
-	// get centroids + areas
-	geo.features.forEach((feature) => {
-		feature.centroid = centroid(feature);
-		feature.area = areasize(feature, path);
-		return feature;
-	});
-
-	// get smallest area
-	const minArea = d3.min(geo.features, (d) => d.area);
-	console.log(minArea);
-
-	// circle radius
-	const r = d3
-		.scaleSqrt()
-		.domain([0, d3.max(geo.features, (d) => d.properties.POP_EST)])
-		.range([0, Math.sqrt(params.initSize.w * params.initSize.h) / 10]);
-
-	// draw map
-	g.append("g")
-		.attr("id", "basemap")
-		.selectAll(".country")
-		.data(geo.features)
-		.enter()
-		.append("path")
-		.attr("class", "country")
-		.attr("d", path)
-		.attr("fill", "#f5f5f5")
-		.attr("stroke", "#e0e0e0");
-
-	// add circles at centroids
-	g.append("g")
-		.attr("id", "circles")
-		.selectAll(".propCircle")
-		.data(geo.features)
-		.enter()
-		.append("circle")
-		.attr("cx", (d) => projection(d.centroid)[0])
-		.attr("cy", (d) => projection(d.centroid)[1])
-		.attr("r", (d) => r(d.properties.POP_EST))
-		.style("fill", "#ff111155"); // transparent red
-
-	// get Dorling cartogram positions
-	simulation = d3
-		.forceSimulation(geo.features)
-		.force(
-			"x",
-			d3.forceX((d) => projection(d.centroid)[0])
-		)
-		.force(
-			"y",
-			d3.forceY((d) => projection(d.centroid)[1])
-		)
-		.force(
-			"collide",
-			d3.forceCollide((d) => 1 + r(d.properties.POP_EST))
-		)
-		.stop();
-
-	// Utilities for bubble charts
-	function centroid(feature) {
-		// Find the centroid of the largest polygon
-		// Source: https://observablehq.com/d/47c257e62a34b61d
-		const geometry = feature.geometry;
-		if (geometry.type === "Polygon") {
-			return d3.geoCentroid(feature);
-		} else {
-			let largestPolygon = {},
-				largestArea = 0;
-			geometry.coordinates.forEach((coordinates) => {
-				const polygon = { type: "Polygon", coordinates },
-					area = d3.geoArea(polygon);
-				if (area > largestArea) {
-					largestPolygon = polygon;
-					largestArea = area;
-				}
-			});
-			return d3.geoCentroid(largestPolygon);
-		}
-	}
-
-	const resize = function (e) {
-		const map = d3.select("#basemap");
-		const circles = d3.select("#circles");
-		const scale =
-			mapAR > e.x / e.y ? e.x / mapInitSize[0] : e.y / mapInitSize[1];
-
-		// if below a certain size, switch to Dorling cartogram + remove base map
-		if (e.x > 500) {
-			// proportional circle map
-			// if simulation is running, stop it
-			simulation.stop();
-			// show + scale base map
-			map.attr("display", "").attr("transform", `scale(${scale})`);
-			// update circle positions
-			// circles.attr("transform", `scale(${e.x / params.initSize.w})`);
-			projection
-				.scale(initProjScale * scale)
-				.translate([
-					initProjTranslate[0] * scale,
-					initProjTranslate[1] * scale,
-				]);
-
-			circles
-				.selectAll("circle")
-				.attr("cx", (d) => projection(d.centroid)[0])
-				.attr("cy", (d) => projection(d.centroid)[1]);
-		} else if (e.x > 250) {
-			// Dorling cartogram
-			// hide base map
-			map.attr("display", "none");
-			// start simulation
-			simulation.restart();
-
-			// simulation.tick(200);
-
-			circles
-				.selectAll("circle")
-				.attr("cx", (d) => d.x * scale)
-				.attr("cy", (d) => d.y * scale);
-		} else {
-			// bubble chart
-			// hide base map
-			map.attr("display", "none");
-		}
-
-		// if smaller, switch to circle packing (?)
-	};
-
-	const constraintCheck = function (e) {
-		const scale =
-			mapAR > e.x / e.y ? e.x / mapInitSize[0] : e.y / mapInitSize[1];
-		return minArea * scale > 0.5;
-	};
-
-	return { resize: resize, constraintCheck: constraintCheck };
-};
-
 visModules.barchart = function (container, params) {
 	console.log("drawing barchart");
 	const g = container
@@ -198,7 +22,7 @@ visModules.barchart = function (container, params) {
 	return { resize: resize, constraintCheck: constraintCheck };
 };
 
-visModules.choropleth = function (container, params) {
+visModules.choropleth = function (container, data, params) {
 	console.log("drawing choropleth map");
 
 	// create g for choropleth
@@ -210,14 +34,14 @@ visModules.choropleth = function (container, params) {
 
 	const projection = params.projection;
 
-	const topo = params.data;
+	// const topo = data;
 	// console.log(topo)
 
 	// convert topojson to geojson (individual area polygons)
-	const geo = topojson.feature(topo, topo.objects.nhs_health_boards3);
+	const geo = topojson.feature(data, data.objects[params.collection]);
 
 	// create mesh for drawing outlines
-	const mesh = topojson.mesh(topo);
+	const mesh = topojson.mesh(data);
 
 	// need to automate this
 	const mapAR = 0.8; // natural aspect ratio of the map - width divided by height (estimate here, needs to be automated)
@@ -238,10 +62,26 @@ visModules.choropleth = function (container, params) {
 
 	// get smallest area
 	const minArea = d3.min(geo.features, (d) => d.area);
-	console.log(
-		minArea,
-		params.name(geo.features[d3.minIndex(geo.features, (d) => d.area)])
-	);
+	// console.log(
+	// 	minArea
+	// 	// params.name(geo.features[d3.minIndex(geo.features, (d) => d.area)])
+	// );
+
+	// get range of values and create color scheme
+	let domain = [
+		d3.min(geo.features, (d) => params.values(d.properties)),
+		d3.max(geo.features, (d) => params.values(d.properties)),
+	];
+	console.log(domain);
+
+	const colorScale = d3.scaleSequential(params.colorScheme).domain([-80, 80]);
+
+	// Legend
+	const legend = g
+		.append("g")
+		.attr("id", "legend")
+		.attr("transform", "translate(360,140)")
+		.call(drawLegend, colorScale);
 
 	// draw coloured regions
 	const regions = g
@@ -254,7 +94,7 @@ visModules.choropleth = function (container, params) {
 			return d.id;
 		})
 		.attr("d", path)
-		.style("fill", (d) => params.colorScale(d.properties.percentNow));
+		.style("fill", (d) => colorScale(params.values(d.properties)));
 
 	// draw outlines on top
 	g.append("g")
@@ -264,7 +104,7 @@ visModules.choropleth = function (container, params) {
 		.attr("d", path)
 		.style("fill", "transparent")
 		.style("stroke", "#444")
-		.style("stroke-width", "1px");
+		.style("stroke-width", "0.5px");
 
 	// get centre of bbox of each region + draw line chart centred on region
 	regions
@@ -278,21 +118,22 @@ visModules.choropleth = function (container, params) {
 		const s =
 			mapAR > e.x / e.y ? e.x / mapInitSize[0] : e.y / mapInitSize[1];
 		g.attr("transform", `scale(${s})`);
-		d3.select(".mapMesh").style("stroke-width", `${1 / s}px`);
+		d3.select(".mapMesh").style("stroke-width", `${0.5 / s}px`);
 	};
 
 	const constraintCheck = function (e) {
 		// check size of smallest region
 		const s =
 			mapAR > e.x / e.y ? e.x / mapInitSize[0] : e.y / mapInitSize[1];
-		return minArea * s > 500;
+		// return minArea * s > 500;
+		return true;
 		// return e.x * e.y > 150000;
 	};
 
 	return { resize: resize, constraintCheck: constraintCheck };
 };
 
-visModules.gridmap = function (container, params) {
+visModules.gridmap = function (container, data, params) {
 	console.log("drawing grid map");
 	const g = container
 		.select("#svg")
@@ -300,11 +141,9 @@ visModules.gridmap = function (container, params) {
 		.attr("id", "gridmap")
 		.attr("class", "visType");
 
-	const data = params.data;
-
 	let tile = g
 		.selectAll(".tile")
-		.data(data.objects.nhs_health_boards3.geometries)
+		.data(data.objects[params.collection])
 		.enter()
 		.append("g")
 		.attr("class", "tile");
@@ -316,7 +155,7 @@ visModules.gridmap = function (container, params) {
 
 	d3.select("#chart-overlay")
 		.selectAll("div")
-		.data(data.objects.nhs_health_boards3.geometries)
+		.data(data.objects[params.collection])
 		.enter()
 		.append("div")
 		.html((d) => `${d.properties.HBName}`)
@@ -422,3 +261,72 @@ visModules.summary = function (container, params) {
 
 	return { resize: resize, constraintCheck: constraintCheck };
 };
+
+function drawLegend(sel, colorScale) {
+	let legend = sel;
+	legend.style("font-size", "12px");
+	let gradient = legend
+		.append("defs")
+		.append("linearGradient")
+		.attr("id", "legendGradient")
+		.attr("x1", "0%")
+		.attr("y1", "0%")
+		.attr("x2", "100%")
+		.attr("y2", "0%");
+	gradient
+		.selectAll("stop")
+		.data(d3.range(0, 101, 5).map((d) => [d, colorScale(d * 1.6 - 80)]))
+		.enter()
+		.append("stop")
+		.attr("offset", (d) => d[0] + "%")
+		.style("stop-color", (d) => d[1])
+		.style("stop-opacity", 1);
+
+	legend
+		.append("rect")
+		.attr("width", 150)
+		.attr("height", 20)
+		.attr("fill", "url('#legendGradient')");
+	legend
+		.append("line")
+		.attr("x1", 75)
+		.attr("x2", 75)
+		.attr("y1", -2)
+		.attr("y2", 22)
+		.style("stroke", "#000")
+		.style("stroke-width", "1px");
+	legend
+		.append("text")
+		.text("EU Referendum Vote")
+		.attr("font-weight", "bold")
+		.attr("font-size", "14px")
+		.attr("y", -22);
+	legend
+		.append("text")
+		.text("Remain")
+		.attr("x", 150)
+		.attr("y", -4)
+		.attr("text-anchor", "end");
+	legend.append("text").text("Leave").attr("y", -4);
+	legend
+		.append("text")
+		.text("0%")
+		.attr("x", 75)
+		.attr("y", 24)
+		.attr("dominant-baseline", "hanging")
+		.attr("text-anchor", "middle");
+	legend
+		.append("text")
+		.text("80%")
+		.attr("x", 0)
+		.attr("y", 24)
+		.attr("dominant-baseline", "hanging")
+		.attr("text-anchor", "middle");
+	legend
+		.append("text")
+		.text("80%")
+		.attr("x", 150)
+		.attr("y", 24)
+		.attr("dominant-baseline", "hanging")
+		.attr("text-anchor", "middle");
+}

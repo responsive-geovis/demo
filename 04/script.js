@@ -7,18 +7,18 @@ d3.select("body")
 	.attr("class", "input hidden");
 
 //load data
-d3.json("geotheory_uk_2016_eu_referendum_with_ni.geojson").then(function (
-	data
-) {
+d3.json("geotheory_uk_2016_eu_referendum_with_ni.json").then(function (data) {
 	console.log(data);
 
 	// set parameters
 	const params = {
 		visTypes: ["choropleth", "gridmap", "summary"],
-		colorScale: d3.scaleSequential(d3.interpolateBlues).domain([0, 100]),
+		colorScheme: d3.interpolateRdBu,
 		initSize: { w: 700, h: 700 },
 		projection: d3.geoAlbers().rotate([0, 0]),
-		name: (feature) => feature.properties.HBName,
+		collection: "geotheory_uk_2016_eu_referendum_with_ni",
+		values: (d) => d.pct_rmn - d.pct_lev,
+		// name: (feature) => feature.properties.HBName,
 	};
 
 	// default parameters
@@ -47,7 +47,7 @@ d3.json("geotheory_uk_2016_eu_referendum_with_ni.geojson").then(function (
 	// initalise all selected vis types
 	const resizers = {}; // add resizer functions into this
 	params.visTypes.forEach(function (d) {
-		resizers[d] = visModules[d](con, params);
+		resizers[d] = visModules[d](con, data, params);
 	});
 
 	// listen to resize events and resize
