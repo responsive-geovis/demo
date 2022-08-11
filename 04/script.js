@@ -7,17 +7,32 @@ d3.select("body")
 	.attr("class", "input hidden");
 
 //load data
-d3.json("geotheory_uk_2016_eu_referendum_with_ni.json").then(function (data) {
+Promise.all([
+	d3.json("data/geotheory_uk_2016_eu_referendum_with_ni.json"),
+	d3.json("data/test.hexjson"),
+]).then(function (data) {
 	console.log(data);
+
+	const map = data[0];
+	const hex = data[1];
+
+	// pull results only from map file:
+	const results = {};
+	map.objects.geotheory_uk_2016_eu_referendum_with_ni.geometries.forEach(
+		function (d) {
+			results[d.properties.area_cd] = d.properties;
+		}
+	);
+	console.log(results); // saved to referendum_vote.json
 
 	// set parameters
 	const params = {
-		visTypes: ["choropleth", "gridmap", "summary"],
+		visTypes: ["choropleth", "hexmap", "summary"],
 		colorScheme: d3.interpolateRdBu,
 		initSize: { w: 700, h: 700 },
 		projection: d3.geoAlbers().rotate([0, 0]),
 		collection: "geotheory_uk_2016_eu_referendum_with_ni",
-		values: (d) => d.pct_rmn - d.pct_lev,
+		values: (d) => (d ? d.pct_rmn - d.pct_lev : undefined),
 		// name: (feature) => feature.properties.HBName,
 	};
 
@@ -47,7 +62,11 @@ d3.json("geotheory_uk_2016_eu_referendum_with_ni.json").then(function (data) {
 	// initalise all selected vis types
 	const resizers = {}; // add resizer functions into this
 	params.visTypes.forEach(function (d) {
-		resizers[d] = visModules[d](con, data, params);
+		resizers[d] = visModules[d](
+			con,
+			{ map: map, hex: hex, results: results },
+			params
+		);
 	});
 
 	// listen to resize events and resize

@@ -38,10 +38,10 @@ visModules.choropleth = function (container, data, params) {
 	// console.log(topo)
 
 	// convert topojson to geojson (individual area polygons)
-	const geo = topojson.feature(data, data.objects[params.collection]);
+	const geo = topojson.feature(data.map, data.map.objects[params.collection]);
 
 	// create mesh for drawing outlines
-	const mesh = topojson.mesh(data);
+	const mesh = topojson.mesh(data.map);
 
 	// need to automate this
 	const mapAR = 0.8; // natural aspect ratio of the map - width divided by height (estimate here, needs to be automated)
@@ -125,109 +125,165 @@ visModules.choropleth = function (container, data, params) {
 		// check size of smallest region
 		const s =
 			mapAR > e.x / e.y ? e.x / mapInitSize[0] : e.y / mapInitSize[1];
-		// return minArea * s > 500;
-		return true;
+		return minArea * s > 1;
+		// return false;
 		// return e.x * e.y > 150000;
 	};
 
 	return { resize: resize, constraintCheck: constraintCheck };
 };
 
-visModules.gridmap = function (container, data, params) {
-	console.log("drawing grid map");
+visModules.hexmap = function (container, data, params) {
+	console.log("drawing hex map");
 	const g = container
 		.select("#svg")
 		.append("g")
-		.attr("id", "gridmap")
+		.attr("id", "hexmap")
 		.attr("class", "visType");
 
-	let tile = g
-		.selectAll(".tile")
-		.data(data.objects[params.collection])
+	let width = params.initSize.w;
+	let height = params.initSize.h;
+
+	// // copied from above
+	const colorScale = d3.scaleSequential(params.colorScheme).domain([-80, 80]);
+
+	// Render the hexes
+	var hexes = d3.renderHexJSON(data.hex, width, height);
+
+	// Bind the hexes to g elements of the svg and position them
+	var hexmap = g
+		.selectAll("g")
+		.data(hexes)
 		.enter()
 		.append("g")
-		.attr("class", "tile");
-	// transform-translate is added in resize function
-
-	tile.append("rect").style("fill", (d) =>
-		params.colorScale(d.properties.percentNow)
-	);
-
-	d3.select("#chart-overlay")
-		.selectAll("div")
-		.data(data.objects[params.collection])
-		.enter()
-		.append("div")
-		.html((d) => `${d.properties.HBName}`)
-		.style("font-size", "11px")
-		.style("color", "#555")
-		.style("padding", "1px");
-
-	const resize = function (e) {
-		// space between tiles
-		const spacing = 2;
-		// padding within tile on all four sides
-		const padding = 1;
-		let nx, ny;
-		let bool_tilemap = false;
-		let mw, mh, sq;
-
-		// set values based on aspect ratio
-		if (e.x / e.y > 14) {
-			// 14 x 1
-			nx = 14;
-			ny = 1;
-		} else if (e.x / e.y > 3.5) {
-			// 7 x 2
-			nx = 7;
-			ny = 2;
-		} else if (e.x / e.y > 1.67) {
-			// 5 x 3
-			nx = 5;
-			ny = 3;
-		} else if (e.x / e.y > 0.5) {
-			// tile map
-			bool_tilemap = true;
-			// tile map
-			mw = e.x / 4; // tile max width
-			mh = e.y / 6; // tile max height
-			sq = d3.min([mh, mw]); // choose smaller value of the two for square size
-		} else if (e.x / e.y > 0.28) {
-			// 2 x 7
-			nx = 2;
-			ny = 7;
-		} else if (e.x / e.y > 0.07) {
-			// 1 x 14
-			nx = 1;
-			ny = 14;
-		} else {
-		}
-
-		// reposition g's
-		const tile = d3.selectAll(".tile");
-		tile.attr("transform", function (d) {
-			let dx, dy;
-			if (bool_tilemap) {
-				dx = d.properties.tileCol * sq + spacing / 2;
-				dy = d.properties.tileRow * sq + spacing / 2;
-			} else {
-				dx = (d.properties.sortOrder % nx) * (e.x / nx) + spacing / 2;
-				dy =
-					Math.floor(d.properties.sortOrder / nx) * (e.y / ny) +
-					spacing / 2;
-			}
-
-			return `translate(${dx},${dy})`;
+		.attr("transform", function (hex) {
+			return "translate(" + hex.x + "," + hex.y + ")";
 		});
 
-		// resize squares
-		tile.select("rect")
-			.attr("width", (bool_tilemap ? sq : e.x / nx) - spacing)
-			.attr("height", (bool_tilemap ? sq : e.y / ny) - spacing);
+	// Draw the polygons around each hex's centre
+	hexmap
+		.append("polygon")
+		.attr("points", function (hex) {
+			console.log(data.results);
+			return hex.points;
+		})
+		.attr("stroke", "white")
+		.attr("stroke-width", "2")
+		.attr("fill", (d) => colorScale(params.values(data.results[d.key])));
+
+	// Add the hex codes as labels
+	// hexmap
+	// 	.append("text")
+	// 	.append("tspan")
+	// 	.attr("text-anchor", "middle")
+	// 	.text(function(hex) {return hex.key;});
+
+	// let bounds = data.hex.features.map(d3.geoBounds);
+	// bounds = [
+	// 	[d3.min(bounds, (d) => d[0][0]), d3.min(bounds, (d) => d[0][1])],
+	// 	[d3.max(bounds, (d) => d[1][0]), d3.max(bounds, (d) => d[1][1])],
+	// ];
+	// console.log(bounds);
+
+	// const projection = d3.geoMercator().scale(2800).translate([500, 3510]);
+
+	// // need to automate this
+	// const mapAR = 0.8; // natural aspect ratio of the map - width divided by height (estimate here, needs to be automated)
+
+	// const mapInitSize =
+	// 	params.initSize.w / params.initSize.h < mapAR
+	// 		? [params.initSize.w, params.initSize.w / mapAR]
+	// 		: [params.initSize.h * mapAR, params.initSize.h];
+
+	// const path = d3.geoPath(projection);
+
+	// // draw coloured regions
+	// const hexagons = g
+	// 	.selectAll(".hex")
+	// 	.data(data.hex.features)
+	// 	.enter()
+	// 	.append("path")
+	// 	.attr("class", "hex")
+	// 	.attr("id", function (d) {
+	// 		return d.properties.CODE;
+	// 	})
+	// 	.attr("d", path)
+	// 	.style("fill", (d) =>
+	// 		colorScale(params.values(data.results[d.properties.CODE]))
+	// 	);
+
+	// d3.select("#chart-overlay")
+	// 	.selectAll("div")
+	// 	.data(data.objects[params.collection])
+	// 	.enter()
+	// 	.append("div")
+	// 	.html((d) => `${d.properties.HBName}`)
+	// 	.style("font-size", "11px")
+	// 	.style("color", "#555")
+	// 	.style("padding", "1px");
+
+	const resize = function (e) {
+		// // space between tiles
+		// const spacing = 2;
+		// // padding within tile on all four sides
+		// const padding = 1;
+		// let nx, ny;
+		// let bool_tilemap = false;
+		// let mw, mh, sq;
+		// // set values based on aspect ratio
+		// if (e.x / e.y > 14) {
+		// 	// 14 x 1
+		// 	nx = 14;
+		// 	ny = 1;
+		// } else if (e.x / e.y > 3.5) {
+		// 	// 7 x 2
+		// 	nx = 7;
+		// 	ny = 2;
+		// } else if (e.x / e.y > 1.67) {
+		// 	// 5 x 3
+		// 	nx = 5;
+		// 	ny = 3;
+		// } else if (e.x / e.y > 0.5) {
+		// 	// tile map
+		// 	bool_tilemap = true;
+		// 	// tile map
+		// 	mw = e.x / 4; // tile max width
+		// 	mh = e.y / 6; // tile max height
+		// 	sq = d3.min([mh, mw]); // choose smaller value of the two for square size
+		// } else if (e.x / e.y > 0.28) {
+		// 	// 2 x 7
+		// 	nx = 2;
+		// 	ny = 7;
+		// } else if (e.x / e.y > 0.07) {
+		// 	// 1 x 14
+		// 	nx = 1;
+		// 	ny = 14;
+		// } else {
+		// }
+		// // reposition g's
+		// const tile = d3.selectAll(".tile");
+		// tile.attr("transform", function (d) {
+		// 	let dx, dy;
+		// 	if (bool_tilemap) {
+		// 		dx = d.properties.tileCol * sq + spacing / 2;
+		// 		dy = d.properties.tileRow * sq + spacing / 2;
+		// 	} else {
+		// 		dx = (d.properties.sortOrder % nx) * (e.x / nx) + spacing / 2;
+		// 		dy =
+		// 			Math.floor(d.properties.sortOrder / nx) * (e.y / ny) +
+		// 			spacing / 2;
+		// 	}
+		// 	return `translate(${dx},${dy})`;
+		// });
+		// // resize squares
+		// tile.select("rect")
+		// 	.attr("width", (bool_tilemap ? sq : e.x / nx) - spacing)
+		// 	.attr("height", (bool_tilemap ? sq : e.y / ny) - spacing);
 	};
 
 	const constraintCheck = function (e) {
-		return e.x * e.y > 25000;
+		// return e.x * e.y > 25000;
+		return true;
 	};
 
 	return { resize: resize, constraintCheck: constraintCheck };
