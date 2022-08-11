@@ -8,31 +8,68 @@ d3.select("body")
 
 //load data
 Promise.all([
-	d3.json("data/geotheory_uk_2016_eu_referendum_with_ni.json"),
+	d3.json("data/merged.json"),
 	d3.json("data/test.hexjson"),
+	d3.csv("data/HoC-GE2019-results-by-constituency-csv.csv"),
 ]).then(function (data) {
 	console.log(data);
 
 	const map = data[0];
 	const hex = data[1];
+	const results = data[2];
 
 	// pull results only from map file:
-	const results = {};
-	map.objects.geotheory_uk_2016_eu_referendum_with_ni.geometries.forEach(
-		function (d) {
-			results[d.properties.area_cd] = d.properties;
-		}
-	);
-	console.log(results); // saved to referendum_vote.json
+	// const results = {};
+	// map.objects.geotheory_uk_2016_eu_referendum_with_ni.geometries.forEach(
+	// 	function (d) {
+	// 		results[d.properties.area_cd] = d.properties;
+	// 	}
+	// );
+	// console.log(results); // saved to referendum_vote.json
+
+	let colorScale = d3
+		.scaleOrdinal()
+		.domain([
+			"Con",
+			"Lab",
+			"SNP",
+			"LD",
+			"DUP",
+			"SF",
+			"PC",
+			"SDLP",
+			"Green",
+			"Alliance",
+			"Spk",
+		])
+		.range([
+			"#0575c9",
+			"#e91d0e",
+			"#f8ed2e",
+			"#efac18",
+			"#b51c4b",
+			"#159b78",
+			"#13e594",
+			"#224922",
+			"#5fb25f",
+			"#d6b429",
+			"#d4cfbe",
+		]);
 
 	// set parameters
 	const params = {
-		visTypes: ["choropleth", "hexmap", "summary"],
-		colorScheme: d3.interpolateRdBu,
 		initSize: { w: 700, h: 700 },
-		projection: d3.geoAlbers().rotate([0, 0]),
-		collection: "geotheory_uk_2016_eu_referendum_with_ni",
-		values: (d) => (d ? d.pct_rmn - d.pct_lev : undefined),
+		visTypes: ["choropleth", "hexmap", "summary"],
+		map: data[0],
+		hex: data[1],
+		data: data[2],
+		collection: "merged",
+		map_id: (d) => d.properties.id,
+		hex_id: (d) => d.key,
+		data_id: (d) => d.ons_id,
+		colorScale: colorScale,
+		values: (d) => d.first_party,
+		// values: (d) => (d ? d.pct_rmn - d.pct_lev : undefined),
 		// name: (feature) => feature.properties.HBName,
 	};
 
@@ -62,11 +99,7 @@ Promise.all([
 	// initalise all selected vis types
 	const resizers = {}; // add resizer functions into this
 	params.visTypes.forEach(function (d) {
-		resizers[d] = visModules[d](
-			con,
-			{ map: map, hex: hex, results: results },
-			params
-		);
+		resizers[d] = visModules[d](con, params);
 	});
 
 	// listen to resize events and resize

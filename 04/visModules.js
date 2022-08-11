@@ -22,7 +22,7 @@ visModules.barchart = function (container, params) {
 	return { resize: resize, constraintCheck: constraintCheck };
 };
 
-visModules.choropleth = function (container, data, params) {
+visModules.choropleth = function (container, params) {
 	console.log("drawing choropleth map");
 
 	// create g for choropleth
@@ -32,16 +32,16 @@ visModules.choropleth = function (container, data, params) {
 		.attr("id", "choropleth")
 		.attr("class", "visType");
 
-	const projection = params.projection;
-
-	// const topo = data;
-	// console.log(topo)
+	const projection = d3.geoAlbers().rotate([0, 0]);
 
 	// convert topojson to geojson (individual area polygons)
-	const geo = topojson.feature(data.map, data.map.objects[params.collection]);
+	const geo = topojson.feature(
+		params.map,
+		params.map.objects[params.collection]
+	);
 
 	// create mesh for drawing outlines
-	const mesh = topojson.mesh(data.map);
+	const mesh = topojson.mesh(params.map);
 
 	// need to automate this
 	const mapAR = 0.8; // natural aspect ratio of the map - width divided by height (estimate here, needs to be automated)
@@ -67,21 +67,12 @@ visModules.choropleth = function (container, data, params) {
 	// 	// params.name(geo.features[d3.minIndex(geo.features, (d) => d.area)])
 	// );
 
-	// get range of values and create color scheme
-	let domain = [
-		d3.min(geo.features, (d) => params.values(d.properties)),
-		d3.max(geo.features, (d) => params.values(d.properties)),
-	];
-	console.log(domain);
-
-	const colorScale = d3.scaleSequential(params.colorScheme).domain([-80, 80]);
-
-	// Legend
-	const legend = g
-		.append("g")
-		.attr("id", "legend")
-		.attr("transform", "translate(360,140)")
-		.call(drawLegend, colorScale);
+	// // Legend
+	// const legend = g
+	// 	.append("g")
+	// 	.attr("id", "legend")
+	// 	.attr("transform", "translate(360,140)")
+	// 	.call(drawLegend, colorScale);
 
 	// draw coloured regions
 	const regions = g
@@ -91,10 +82,19 @@ visModules.choropleth = function (container, data, params) {
 		.append("path")
 		.attr("class", "area")
 		.attr("id", function (d) {
-			return d.id;
+			console.log(d);
+			return params.map_id(d);
 		})
 		.attr("d", path)
-		.style("fill", (d) => colorScale(params.values(d.properties)));
+		.style("fill", (d) =>
+			params.colorScale(
+				params.values(
+					params.data.find(
+						(x) => params.data_id(x) === params.map_id(d)
+					)
+				)
+			)
+		);
 
 	// draw outlines on top
 	g.append("g")
