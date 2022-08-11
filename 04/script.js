@@ -12,7 +12,7 @@ Promise.all([
 	d3.json("data/test.hexjson"),
 	d3.csv("data/HoC-GE2019-results-by-constituency-csv.csv"),
 ]).then(function (data) {
-	console.log(data);
+	// console.log(data);
 
 	const map = data[0];
 	const hex = data[1];

@@ -17,13 +17,13 @@
 
 ## Example #3: to be updated
 
-## Example #4: EU Referendum Vote (UK Map)
+## Example #4: UK General Election 2019 (Choropleth/Hex Map)
 
--   Visualizations inspired by the [NYT](https://www.nytimes.com/interactive/2016/06/24/world/europe/how-britain-voted-brexit-referendum.html)
+-   Inspired by [BBC Election results live tracker](https://www.bbc.co.uk/news/election/2019/results)
+-   Color scheme taken from BBC maps
 
 ### Data
 
--   UK map + referendum data via [Stamen Github](https://github.com/stamen/dwsd/blob/master/data/geotheory_uk_2016_eu_referendum_with_ni.geojson)
--   UK hex map by Ben Flanagan via [ESRI](https://www.arcgis.com/home/item.html?id=593037bc399e460bb7c6c631ceff67b4#!), converted to geojson using QGIS
-
-https://jeffpaine.github.io/geojson-topojson/
+-   UK map by parliamentary constituency via [Martin Chorley's Github repo](https://github.com/martinjc/UK-GeoJSON/), combined using QGIS and simplified and converted to topojson using mapshaper.org.
+-   Hex map of UK parliamentary constituencies via [ODI Leeds](https://odileeds.github.io/hexmaps/constituencies/)
+-   2019 General Election results via [UK Parliament website](https://commonslibrary.parliament.uk/research-briefings/cbp-8749/)
