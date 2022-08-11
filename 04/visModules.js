@@ -67,12 +67,12 @@ visModules.choropleth = function (container, params) {
 	// 	// params.name(geo.features[d3.minIndex(geo.features, (d) => d.area)])
 	// );
 
-	// // Legend
-	// const legend = g
-	// 	.append("g")
-	// 	.attr("id", "legend")
-	// 	.attr("transform", "translate(360,140)")
-	// 	.call(drawLegend, colorScale);
+	// Legend
+	const legend = g
+		.append("g")
+		.attr("id", "legend")
+		.attr("transform", "translate(350,115)")
+		.call(drawLegend, params.colors, params.category_labels, params.title);
 
 	// draw coloured regions
 	const regions = g
@@ -179,6 +179,13 @@ visModules.hexmap = function (container, params) {
 			)
 		);
 
+	// Legend
+	const legend = g
+		.append("g")
+		.attr("id", "legend")
+		.attr("transform", "translate(520,30)")
+		.call(drawLegend, params.colors, params.category_labels, params.title);
+
 	// Add the hex codes as labels
 	// hexmap
 	// 	.append("text")
@@ -190,6 +197,7 @@ visModules.hexmap = function (container, params) {
 		const s = hexAR > e.x / e.y ? e.x / hexInitSize.w : e.y / hexInitSize.h;
 		g.attr("transform", `scale(${s})`);
 		// d3.select(".mapMesh").style("stroke-width", `${0.5 / s}px`);
+		console.log(s);
 	};
 
 	const constraintCheck = function (e) {
@@ -229,71 +237,30 @@ visModules.summary = function (container, params) {
 	return { resize: resize, constraintCheck: constraintCheck };
 };
 
-function drawLegend(sel, colorScale) {
+function drawLegend(sel, colors, labels, title) {
 	let legend = sel;
 	legend.style("font-size", "12px");
-	let gradient = legend
-		.append("defs")
-		.append("linearGradient")
-		.attr("id", "legendGradient")
-		.attr("x1", "0%")
-		.attr("y1", "0%")
-		.attr("x2", "100%")
-		.attr("y2", "0%");
-	gradient
-		.selectAll("stop")
-		.data(d3.range(0, 101, 5).map((d) => [d, colorScale(d * 1.6 - 80)]))
+
+	let item = legend
+		.selectAll("g")
+		.data(colors)
 		.enter()
-		.append("stop")
-		.attr("offset", (d) => d[0] + "%")
-		.style("stop-color", (d) => d[1])
-		.style("stop-opacity", 1);
+		.append("g")
+		.attr("transform", (d, i) => `translate(0,${i * 18})`);
+
+	item.append("rect")
+		.attr("width", 16)
+		.attr("height", 16)
+		.attr("fill", (d) => d);
+	item.append("text")
+		.attr("x", 20)
+		.attr("y", 12)
+		.text((d, i) => labels[i]);
 
 	legend
-		.append("rect")
-		.attr("width", 150)
-		.attr("height", 20)
-		.attr("fill", "url('#legendGradient')");
-	legend
-		.append("line")
-		.attr("x1", 75)
-		.attr("x2", 75)
-		.attr("y1", -2)
-		.attr("y2", 22)
-		.style("stroke", "#000")
-		.style("stroke-width", "1px");
-	legend
 		.append("text")
-		.text("EU Referendum Vote")
+		.text(title)
 		.attr("font-weight", "bold")
 		.attr("font-size", "14px")
-		.attr("y", -22);
-	legend
-		.append("text")
-		.text("Remain")
-		.attr("x", 150)
-		.attr("y", -4)
-		.attr("text-anchor", "end");
-	legend.append("text").text("Leave").attr("y", -4);
-	legend
-		.append("text")
-		.text("0%")
-		.attr("x", 75)
-		.attr("y", 24)
-		.attr("dominant-baseline", "hanging")
-		.attr("text-anchor", "middle");
-	legend
-		.append("text")
-		.text("80%")
-		.attr("x", 0)
-		.attr("y", 24)
-		.attr("dominant-baseline", "hanging")
-		.attr("text-anchor", "middle");
-	legend
-		.append("text")
-		.text("80%")
-		.attr("x", 150)
-		.attr("y", 24)
-		.attr("dominant-baseline", "hanging")
-		.attr("text-anchor", "middle");
+		.attr("y", -5);
 }

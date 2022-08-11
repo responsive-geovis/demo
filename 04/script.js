@@ -27,42 +27,59 @@ Promise.all([
 	// );
 	// console.log(results); // saved to referendum_vote.json
 
-	let colorScale = d3
-		.scaleOrdinal()
-		.domain([
-			"Con",
-			"Lab",
-			"SNP",
-			"LD",
-			"DUP",
-			"SF",
-			"PC",
-			"SDLP",
-			"Green",
-			"Alliance",
-			"Spk",
-		])
-		.range([
-			"#0575c9",
-			"#e91d0e",
-			"#f8ed2e",
-			"#efac18",
-			"#b51c4b",
-			"#159b78",
-			"#13e594",
-			"#224922",
-			"#5fb25f",
-			"#d6b429",
-			"#d4cfbe",
-		]);
+	const categories = [
+		"Con",
+		"Lab",
+		"SNP",
+		"LD",
+		"DUP",
+		"SF",
+		"PC",
+		"SDLP",
+		"Green",
+		"Alliance",
+		"Spk",
+	];
+	const colors = [
+		"#0575c9",
+		"#e91d0e",
+		"#f8ed2e",
+		"#efac18",
+		"#b51c4b",
+		"#159b78",
+		"#13e594",
+		"#224922",
+		"#5fb25f",
+		"#d6b429",
+		"#d4cfbe",
+	];
+	const category_labels = [
+		"Conservative",
+		"Labour",
+		"Scottish National Party",
+		"Liberal Democrat",
+		"Democratic Unionist Party",
+		"Sinn Féin",
+		"Plaid Cymru",
+		"Social Democratic & Labour Party",
+		"Green",
+		"Alliance Party",
+		"Speaker",
+	];
+
+	let colorScale = d3.scaleOrdinal().domain(categories).range(colors);
 
 	// set parameters
 	const params = {
 		initSize: { w: 700, h: 700 },
 		visTypes: ["choropleth", "hexmap", "summary"],
+		title: "UK General Election 2019",
 		map: data[0],
 		hex: data[1],
 		data: data[2],
+		categories: categories,
+		colors: colors,
+		category_labels: category_labels,
 		collection: "merged",
 		map_id: (d) => d.properties.id,
 		hex_id: (d) => d.key,
