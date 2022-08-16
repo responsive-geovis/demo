@@ -72,7 +72,7 @@ Promise.all([
 	// set parameters
 	const params = {
 		initSize: { w: 700, h: 700 },
-		visTypes: ["choropleth", "hexmap", "summary"],
+		visTypes: ["choropleth", "hexmap", "wafflechart"],
 		title: "UK General Election 2019",
 		map: data[0],
 		hex: data[1],
