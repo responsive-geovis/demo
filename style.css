@@ -12,13 +12,6 @@ svg text,
 	resize: both;
 	position: relative;
 	border: 1px solid #ccc;
-
-	width: 1000px;
-	height: 600px;
-	min-width: 25px;
-	min-height: 25px;
-	max-width: 1000px;
-	max-height: 600px;
 }
 
 /*#svg-overlay {
