@@ -1,7 +1,5 @@
 "use strict";
 
-// make an init function that creates and returns the projection function and any parameters I need
-
 // different vis modules can be added to this object
 const visModules = {};
 
@@ -288,60 +286,3 @@ visModules.wafflechart = function (container, params) {
 
 	return { resize: resize, constraintCheck: constraintCheck };
 };
-
-visModules.summary = function (container, params) {
-	console.log("drawing summary");
-	const g = container
-		.select("#svg")
-		.append("g")
-		.attr("id", "summary")
-		.attr("class", "visType");
-
-	g.append("text")
-		.text("Total vaccinations")
-		.attr("y", 20)
-		.attr("font-weight", "bold")
-		.attr("font-size", "15px");
-	g.append("text")
-		.text("in Scotland:")
-		.attr("y", 35)
-		.attr("font-weight", "bold")
-		.attr("font-size", "15px");
-	g.append("text").text("xxx").attr("y", 50);
-
-	const resize = function (e) {};
-
-	const constraintCheck = function (e) {
-		return true;
-	};
-
-	return { resize: resize, constraintCheck: constraintCheck };
-};
-
-function drawLegend(sel, colors, labels, title) {
-	let legend = sel;
-	legend.style("font-size", "12px");
-
-	let item = legend
-		.selectAll("g")
-		.data(colors)
-		.enter()
-		.append("g")
-		.attr("transform", (d, i) => `translate(0,${i * 18})`);
-
-	item.append("rect")
-		.attr("width", 16)
-		.attr("height", 16)
-		.attr("fill", (d) => d);
-	item.append("text")
-		.attr("x", 20)
-		.attr("y", 12)
-		.text((d, i) => labels[i]);
-
-	legend
-		.append("text")
-		.text(title)
-		.attr("font-weight", "bold")
-		.attr("font-size", "14px")
-		.attr("y", -5);
-}
