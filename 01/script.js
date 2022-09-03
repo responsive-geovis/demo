@@ -99,10 +99,10 @@ const path = d3.geoPath(projection);
 
 // data + setup
 Promise.all([
-	d3.json("ne_110m_admin_0_countries_lakes.json"),
-	d3.csv("continents.csv"),
+	d3.json("data/ne_110m_admin_0_countries_lakes.json"),
+	d3.csv("data/continents.csv"),
 ])
-	// d3.json("ne_110m_admin_0_countries_lakes.json")
+
 	.then(function (data) {
 		let topo = data[0];
 		let continents_list = data[1];
