@@ -16,7 +16,7 @@ function responsiveVis(params) {
 	params.container = params.container ? params.container : "#container";
 	// throw warning if vistypes is undefined
 
-	console.log("Parameters:", params);
+	// console.log("Parameters:", params);
 
 	const con = d3
 		.select(params.container)

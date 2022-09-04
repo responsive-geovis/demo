@@ -5,7 +5,6 @@ const visModules = {};
 
 // TEMPLATE
 // visModules.barchart = function (container, params) {
-// 	console.log("drawing barchart");
 // 	const g = container
 // 		.select("#svg")
 // 		.append("g")
@@ -22,8 +21,6 @@ const visModules = {};
 // };
 
 visModules.choropleth = function (container, params) {
-	console.log("drawing choropleth map");
-
 	// create g for choropleth
 	const g = container
 		.select("#svg")
@@ -82,15 +79,12 @@ visModules.choropleth = function (container, params) {
 		.attr("class", "area")
 		.attr("id", (d) => params.map_id(d))
 		.attr("d", path)
-		.style("fill", (d) =>
-			params.colorScale(
-				params.values(
-					params.data.find(
-						(x) => params.data_id(x) === params.map_id(d)
-					)
-				)
-			)
-		);
+		.style("fill", (d) => {
+			let result = params.data.find(
+				(x) => params.data_id(x) === params.map_id(d)
+			);
+			return result ? params.colorScale(params.values(result)) : "#000";
+		});
 
 	// draw outlines on top
 	g.append("g")
@@ -130,8 +124,6 @@ visModules.choropleth = function (container, params) {
 };
 
 visModules.hexmap = function (container, params) {
-	console.log("drawing hex map");
-
 	const hexAR = 0.8;
 	const hexInitSize =
 		params.initSize.w / params.initSize.h > hexAR
@@ -208,7 +200,6 @@ visModules.hexmap = function (container, params) {
 
 // waffle chart
 visModules.wafflechart = function (container, params) {
-	console.log("drawing waffle chart");
 	const g = container
 		.select("#svg")
 		.append("g")
@@ -288,7 +279,6 @@ visModules.wafflechart = function (container, params) {
 };
 
 visModules.circleMap = function (container, params) {
-	console.log("drawing proportional circle map (circleMap)");
 	const g = container
 		.select("#svg")
 		.append("g")
@@ -417,8 +407,6 @@ visModules.circleMap = function (container, params) {
 };
 
 visModules.circleCartogram = function (container, params) {
-	console.log("drawing circle cartogram (circleCartogram)");
-
 	const g = container
 		.select("#svg")
 		.append("g")
@@ -547,7 +535,6 @@ visModules.circleCartogram = function (container, params) {
 };
 
 visModules.bubbleChart = function (container, params) {
-	console.log("drawing bubble chart (bubbleChart)");
 	const g = container
 		.select("#svg")
 		.append("g")
