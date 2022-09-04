@@ -66,9 +66,18 @@ Promise.all([
 	// initialise responsive vis with parameters
 	responsiveVis({
 		visTypes: [
-			{ type: "choropleth", params: [] },
-			{ type: "hexmap", params: [] },
-			{ type: "wafflechart", params: [] },
+			{
+				type: "choropleth",
+				params: {
+					projection: d3.geoAlbers().rotate([0, 0]),
+					legendPosition: [280, 115], // relative to initSize
+					conditions: {
+						minAreaSize: 2,
+					},
+				},
+			},
+			{ type: "hexmap", params: {} },
+			{ type: "wafflechart", params: {} },
 		],
 		initSize: { w: 700, h: 700 },
 		title: "UK General Election 2019",

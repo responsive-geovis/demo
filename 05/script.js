@@ -91,7 +91,18 @@ Promise.all([
 
 	// initialise responsive vis with parameters
 	responsiveVis({
-		visTypes: [{ type: "choropleth", params: [] }], //"hexmap", "wafflechart"],
+		visTypes: [
+			{
+				type: "choropleth",
+				params: {
+					projection: d3.geoConicConformal().parallels([44, 49]), // Lambert-93
+					legendPosition: [0, 350], // relative to initSize
+					conditions: {
+						minAreaSize: 0, // disable condition
+					},
+				},
+			},
+		], //"hexmap", "wafflechart"],
 		initSize: { w: 700, h: 700 },
 		title: "French Legislative Election 2022",
 		map: map,

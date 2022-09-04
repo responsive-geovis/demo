@@ -21,6 +21,13 @@ const visModules = {};
 // };
 
 visModules.choropleth = function (container, params) {
+	// parameters specifically for this vis type
+	let params_local = params.visTypes.find(
+		(d) => d.type === "choropleth"
+	).params;
+
+	const projection = params_local.projection;
+
 	// create g for choropleth
 	const g = container
 		.select("#svg")
@@ -28,27 +35,33 @@ visModules.choropleth = function (container, params) {
 		.attr("id", "choropleth")
 		.attr("class", "visType");
 
-	const projection = d3.geoAlbers().rotate([0, 0]);
+	// g elements for filled polygons + mesh on top
+	const polygons_g = g.append("g").attr("id", "polygons");
+	const mesh_g = g.append("g").attr("id", "mesh");
+	const legend = g.append("g").attr("id", "legend");
 
 	// convert topojson to geojson (individual area polygons)
 	const geo = topojson.feature(
 		params.map,
 		params.map.objects[params.collection]
 	);
-
 	// create mesh for drawing outlines
 	const mesh = topojson.mesh(params.map);
-
-	// need to automate this
-	const mapAR = 0.8; // natural aspect ratio of the map - width divided by height (estimate here, needs to be automated)
-
-	const mapInitSize =
-		params.initSize.w / params.initSize.h < mapAR
-			? [params.initSize.w, params.initSize.w / mapAR]
-			: [params.initSize.h * mapAR, params.initSize.h];
-
-	projection.fitSize(mapInitSize, mesh);
+	// get correct size for projection
+	projection.fitSize([params.initSize.w, params.initSize.h], mesh);
 	const path = d3.geoPath(projection);
+
+	// draw mesh first to get size + aspect ratio
+	mesh_g.datum(mesh).append("path").attr("class", "mapMesh").attr("d", path);
+	const mapInitBBox = mesh_g.node().getBBox();
+	const mapAR = mapInitBBox.width / mapInitBBox.height;
+
+	// make map align with top left corner
+	polygons_g.attr(
+		"transform",
+		`translate(${-mapInitBBox.x},${-mapInitBBox.y})`
+	);
+	mesh_g.attr("transform", `translate(${-mapInitBBox.x},${-mapInitBBox.y})`);
 
 	// get area sizes
 	geo.features.forEach((feature) => {
@@ -63,15 +76,8 @@ visModules.choropleth = function (container, params) {
 	// 	// params.name(geo.features[d3.minIndex(geo.features, (d) => d.area)])
 	// );
 
-	// Legend
-	const legend = g
-		.append("g")
-		.attr("id", "legend")
-		.attr("transform", "translate(350,115)")
-		.call(drawLegend, params.colors, params.category_labels, params.title);
-
 	// draw coloured regions
-	const regions = g
+	polygons_g
 		.selectAll(".area")
 		.data(geo.features)
 		.enter()
@@ -86,38 +92,43 @@ visModules.choropleth = function (container, params) {
 			return result ? params.colorScale(params.values(result)) : "#000";
 		});
 
-	// draw outlines on top
-	g.append("g")
-		.datum(mesh)
-		.append("path")
-		.attr("class", "mapMesh")
+	// draw mesh on top
+	mesh_g
+		.select(".mapMesh")
 		.attr("d", path)
 		.style("fill", "transparent")
 		.style("stroke", "#444")
 		.style("stroke-width", "0.5px");
 
-	// get centre of bbox of each region + draw line chart centred on region
-	regions
-		.append("circle")
-		.attr("r", 5)
-		.attr("cx", 40)
-		.attr("cy", 40)
-		.style("fill", "red");
+	// position + draw legend on top
+	legend
+		.attr(
+			"transform",
+			`translate(${params_local.legendPosition[0]},${params_local.legendPosition[1]})`
+		)
+		.call(drawLegend, params.colors, params.category_labels, params.title);
 
 	const resize = function (e) {
+		// compute scale + translate so that map is always at max size, centered within the container
 		const s =
-			mapAR > e.x / e.y ? e.x / mapInitSize[0] : e.y / mapInitSize[1];
-		g.attr("transform", `scale(${s})`);
+			mapAR > e.x / e.y
+				? e.x / mapInitBBox.width
+				: e.y / mapInitBBox.height;
+		const t =
+			mapAR < e.x / e.y
+				? [(e.x - s * mapInitBBox.width) / 2, 0]
+				: [0, (e.y - s * mapInitBBox.height) / 2];
+		g.attr("transform", `translate(${t[0]},${t[1]}) scale(${s})`);
 		d3.select(".mapMesh").style("stroke-width", `${0.5 / s}px`);
 	};
 
 	const constraintCheck = function (e) {
 		// check size of smallest region
 		const s =
-			mapAR > e.x / e.y ? e.x / mapInitSize[0] : e.y / mapInitSize[1];
-		return minArea * s > 2;
-		// return false;
-		// return e.x * e.y > 150000;
+			mapAR > e.x / e.y
+				? e.x / mapInitBBox.width
+				: e.y / mapInitBBox.height;
+		return minArea * s > params_local.conditions.minAreaSize;
 	};
 
 	return { resize: resize, constraintCheck: constraintCheck };
