@@ -65,8 +65,12 @@ Promise.all([
 
 	// initialise responsive vis with parameters
 	responsiveVis({
+		visTypes: [
+			{ type: "choropleth", params: [] },
+			{ type: "hexmap", params: [] },
+			{ type: "wafflechart", params: [] },
+		],
 		initSize: { w: 700, h: 700 },
-		visTypes: ["choropleth", "hexmap", "wafflechart"],
 		title: "UK General Election 2019",
 		map: data[0],
 		hex: data[1],

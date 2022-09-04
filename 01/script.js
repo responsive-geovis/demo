@@ -55,8 +55,12 @@ Promise.all([
 
 	// initialise responsive vis with parameters
 	responsiveVis({
+		visTypes: [
+			{ type: "circleMap", params: [] },
+			{ type: "circleCartogram", params: [] },
+			{ type: "bubbleChart", params: [] },
+		],
 		initSize: { w: 1000, h: 600 },
-		visTypes: ["circleMap", "circleCartogram", "bubbleChart"],
 		title: "World Population by Country",
 		map: geo,
 		circleColor: circleColor,

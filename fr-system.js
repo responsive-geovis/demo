@@ -39,7 +39,7 @@ function responsiveVis(params) {
 	// initalise all selected vis types
 	const resizers = {}; // add resizer functions into this
 	params.visTypes.forEach(function (d) {
-		resizers[d] = visModules[d](con, params);
+		resizers[d.type] = visModules[d.type](con, params);
 	});
 
 	// listen to resize events and resize
@@ -72,7 +72,7 @@ function resizeObserver(params, resizers) {
 				// update vis
 				// check in order of priority if constraints are fulfilled
 				for (let i = 0; i < params.visTypes.length; i++) {
-					let vis = params.visTypes[i];
+					let vis = params.visTypes[i].type;
 					if (resizers[vis].constraintCheck({ x: w, y: h })) {
 						displayVis(vis);
 						resizers[vis].resize({ x: w, y: h });

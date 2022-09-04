@@ -91,8 +91,8 @@ Promise.all([
 
 	// initialise responsive vis with parameters
 	responsiveVis({
+		visTypes: [{ type: "choropleth", params: [] }], //"hexmap", "wafflechart"],
 		initSize: { w: 700, h: 700 },
-		visTypes: ["choropleth"], //"hexmap", "wafflechart"],
 		title: "French Legislative Election 2022",
 		map: map,
 		// hex: data[1],
