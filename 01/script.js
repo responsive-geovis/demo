@@ -2,29 +2,30 @@
 
 // load data
 Promise.all([
-	d3.json("data/ne_110m_admin_0_countries_lakes.json"),
-	d3.csv("data/continents.csv"),
+	d3.json("data/world_with_continent.json"),
+	// d3.csv("data/continents.csv"),
 ]).then(function (data) {
 	// console.log(data);
 
-	let topo = data[0];
-	let continents_list = data[1];
+	let geo = data[0];
+	// let continents_list = data[1];
 
 	// convert topojson to geojson
-	const geo = topojson.feature(
-		topo,
-		topo.objects.ne_110m_admin_0_countries_lakes
-	);
-	// get centroids + add continent
-	// to do - check in beginning of each func that needs centroids if they've been added yet, then add if not (?)
-	geo.features.forEach((feature) => {
-		feature.properties.centroid = centroid(feature);
-		// console.log(feature.properties.ISO_A3);
-		feature.properties.continent = continents_list.find(
-			(d) => d.iso == feature.properties.ISO_A3
-		).continent;
-		return feature;
-	});
+	// const geo = topojson.feature(
+	// 	topo,
+	// 	topo.objects.ne_110m_admin_0_countries_lakes
+	// );
+	// // get centroids + add continent
+	// geo.features.forEach((feature) => {
+	// 	feature.properties.centroid = centroid(feature);
+	// 	// console.log(feature.properties.ISO_A3);
+	// 	feature.properties.continent = continents_list.find(
+	// 		(d) => d.iso == feature.properties.ISO_A3
+	// 	).continent;
+	// 	return feature;
+	// });
+
+	console.log(geo);
 
 	// color for all circles
 	const circleColor = "#D9632B"; //"#C53838";
