@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<title>Responsive Map Demo</title>
+
+		<!-- https://css-tricks.com/emoji-as-a-favicon/ -->
+		<link
+			rel="icon"
+			href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📍</text></svg>"
+		/>
+
+		<link rel="stylesheet" href="../style.css" />
+
+		<script src="https://d3js.org/d3.v7.min.js"></script>
+		<script src="https://unpkg.com/topojson@3"></script>
+
+		<!-- responsive vis system + view states -->
+		<script src="../utils.js"></script>
+		<script src="../fr-system.js"></script>
+		<script src="../visModules.js"></script>
+	</head>
+	<body>
+		<div>
+			<strong>Responsive Map Demo</strong> |
+			<a href="https://github.com/sarah37/responsive-map-demo/"
+				>View on GitHub</a
+			><br />
+			<em>
+				Resize the container using the handle in the botton right and
+				watch the visualization update. </em
+			><br /><br />
+			<ul>
+				<li>Width: <span id="widthOutput"></span>px</li>
+				<li>Height: <span id="heightOutput"></span>px</li>
+				<li>Aspect ratio: <span id="arOutput"></span></li>
+				<li>Area: <span id="areaOutput"></span>px</li>
+			</ul>
+		</div>
+
+		<div id="container"></div>
+
+		<script type="text/javascript" src="script.js"></script>
+	</body>
+</html>
