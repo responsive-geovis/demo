@@ -11,13 +11,13 @@ const visModules = {};
 // 		.attr("id", "barchart")
 // 		.attr("class", "visType");
 
-// 	const resize = function (e) {};
+// 	const adapt = function (e) {};
 
-// 	const constraintCheck = function () {
+// 	const conditions = function () {
 // 		return true;
 // 	};
 
-// 	return { resize: resize, constraintCheck: constraintCheck };
+// 	return { adapt: adapt, conditions: conditions };
 // };
 
 visModules.choropleth = function (container, params) {
@@ -108,7 +108,7 @@ visModules.choropleth = function (container, params) {
 		)
 		.call(drawLegend, params.colors, params.category_labels, params.title);
 
-	const resize = function (e) {
+	const adapt = function (e) {
 		// compute scale + translate so that map is always at max size, centered within the container
 		const s =
 			mapAR > e.x / e.y
@@ -122,7 +122,7 @@ visModules.choropleth = function (container, params) {
 		d3.select(".mapMesh").style("stroke-width", `${0.5 / s}px`);
 	};
 
-	const constraintCheck = function (e) {
+	const conditions = function (e) {
 		// check size of smallest region
 		const s =
 			mapAR > e.x / e.y
@@ -131,7 +131,7 @@ visModules.choropleth = function (container, params) {
 		return minArea * s > params_local.conditions.minAreaSize;
 	};
 
-	return { resize: resize, constraintCheck: constraintCheck };
+	return { adapt: adapt, conditions: conditions };
 };
 
 visModules.hexmap = function (container, params) {
@@ -195,18 +195,18 @@ visModules.hexmap = function (container, params) {
 	// 	.attr("text-anchor", "middle")
 	// 	.text(function(hex) {return hex.key;});
 
-	const resize = function (e) {
+	const adapt = function (e) {
 		const s = hexAR > e.x / e.y ? e.x / hexInitSize.w : e.y / hexInitSize.h;
 		g.attr("transform", `scale(${s})`);
 		// d3.select(".mapMesh").style("stroke-width", `${0.5 / s}px`);
 	};
 
-	const constraintCheck = function (e) {
+	const conditions = function (e) {
 		// return e.x * e.y > 25000;
 		return e.x > 300;
 	};
 
-	return { resize: resize, constraintCheck: constraintCheck };
+	return { adapt: adapt, conditions: conditions };
 };
 
 // waffle chart
@@ -225,7 +225,6 @@ visModules.wafflechart = function (container, params) {
 				.sort((a, b) => a.first_party > b.first_party),
 		})
 	);
-	console.log(countries);
 
 	const n_categories = countries.length;
 	const n_datapoints = params.data.length;
@@ -251,7 +250,7 @@ visModules.wafflechart = function (container, params) {
 		return res;
 	}
 
-	const resize = function (e) {
+	const adapt = function (e) {
 		// compute new sizes/grid
 		let label = 30; // could update this step-wise?
 		let margin = 5;
@@ -260,8 +259,6 @@ visModules.wafflechart = function (container, params) {
 		let size = Math.floor(Math.sqrt(((w * h) / n_datapoints) * 0.7)); // spare space
 		let padding = Math.ceil(size * 0.15);
 		let wn = Math.floor(w / (size + padding));
-
-		// console.log(size);
 
 		let translate = partsSums(
 			countries.map((d) => (d.data.length / wn) * (size + padding))
@@ -282,11 +279,11 @@ visModules.wafflechart = function (container, params) {
 			.attr("y", (d, i) => Math.floor(i / wn) * (size + padding));
 	};
 
-	const constraintCheck = function () {
+	const conditions = function () {
 		return true;
 	};
 
-	return { resize: resize, constraintCheck: constraintCheck };
+	return { adapt: adapt, conditions: conditions };
 };
 
 visModules.circleMap = function (container, params) {
@@ -329,11 +326,10 @@ visModules.circleMap = function (container, params) {
 
 	// get initial bbox of map + compute aspect ratio
 	const mapInitBBox = map.node().getBBox();
-	console.log(map, mapInitBBox);
 	const mapAR = mapInitBBox.width / mapInitBBox.height;
 
 	// make map + circles align with top left corner
-	// will be centered in resize function
+	// will be centered in adapt function
 	map.attr("transform", `translate(${-mapInitBBox.x},${-mapInitBBox.y})`);
 	circles.attr("transform", `translate(${-mapInitBBox.x},${-mapInitBBox.y})`);
 
@@ -393,9 +389,8 @@ visModules.circleMap = function (container, params) {
 	let lower_bound = pop_vals.sort((a, b) => a - b)[
 		Math.floor(pop_vals.length * 0.1)
 	];
-	console.log(lower_bound);
 
-	const resize = function (e) {
+	const adapt = function (e) {
 		// compute scale + translate so that map is always at max size, centered within the container
 		const s =
 			mapAR > e.x / e.y
@@ -415,7 +410,7 @@ visModules.circleMap = function (container, params) {
 		legend.selectAll("text").attr("font-size", 11 / s);
 	};
 
-	const constraintCheck = function (e) {
+	const conditions = function (e) {
 		const s =
 			mapAR > e.x / e.y
 				? e.x / mapInitBBox.width
@@ -431,7 +426,7 @@ visModules.circleMap = function (container, params) {
 		);
 	};
 
-	return { resize: resize, constraintCheck: constraintCheck };
+	return { adapt: adapt, conditions: conditions };
 };
 
 visModules.circleCartogram = function (container, params) {
@@ -507,11 +502,10 @@ visModules.circleCartogram = function (container, params) {
 
 	// get initial bbox of circles + compute aspect ratio
 	const mapInitBBox = circles.node().getBBox();
-	console.log(map, mapInitBBox);
 	const mapAR = mapInitBBox.width / mapInitBBox.height;
 
 	// make circles align with top left corner
-	// will be centered in resize function
+	// will be centered in adapt function
 	circles.attr("transform", `translate(${-mapInitBBox.x},${-mapInitBBox.y})`);
 
 	// legend
@@ -544,7 +538,7 @@ visModules.circleCartogram = function (container, params) {
 		Math.floor(pop_vals.length * 0.1)
 	];
 
-	const resize = function (e) {
+	const adapt = function (e) {
 		// compute scale + translate so that map is always at max size, centered within the container
 		const s =
 			mapAR > e.x / e.y
@@ -563,7 +557,7 @@ visModules.circleCartogram = function (container, params) {
 		legend.selectAll("text").attr("font-size", 11 / s);
 	};
 
-	const constraintCheck = function (e) {
+	const conditions = function (e) {
 		const s =
 			mapAR > e.x / e.y
 				? e.x / mapInitBBox.width
@@ -579,7 +573,7 @@ visModules.circleCartogram = function (container, params) {
 		);
 	};
 
-	return { resize: resize, constraintCheck: constraintCheck };
+	return { adapt: adapt, conditions: conditions };
 };
 
 visModules.bubbleChart = function (container, params) {
@@ -635,7 +629,7 @@ visModules.bubbleChart = function (container, params) {
 			d3.select("#tooltip").attr("x", -100).attr("y", -100);
 		});
 
-	const resize = function (e) {
+	const adapt = function (e) {
 		// constantly updating circle packing
 		let r = d3
 			.scaleSqrt()
@@ -691,9 +685,9 @@ visModules.bubbleChart = function (container, params) {
 		}
 	};
 
-	const constraintCheck = function () {
+	const conditions = function () {
 		return true;
 	};
 
-	return { resize: resize, constraintCheck: constraintCheck };
+	return { adapt: adapt, conditions: conditions };
 };

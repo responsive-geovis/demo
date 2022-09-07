@@ -16,8 +16,6 @@ function responsiveVis(params) {
 	params.container = params.container ? params.container : "#container";
 	// throw warning if vistypes is undefined
 
-	// console.log("Parameters:", params);
-
 	const con = d3
 		.select(params.container)
 		.style("width", params.initSize.w + "px")
@@ -37,16 +35,16 @@ function responsiveVis(params) {
 	const tooltip = svg.append("text").attr("id", "tooltip");
 
 	// initalise all selected vis types
-	const resizers = {}; // add resizer functions into this
+	const adaptRules = {}; // add resizer functions into this
 	params.visTypes.forEach(function (d) {
-		resizers[d.type] = visModules[d.type](con, params);
+		adaptRules[d.type] = visModules[d.type](con, params);
 	});
 
 	// listen to resize events and resize
-	resizeObserver(params, resizers);
+	resizeObserver(params, adaptRules);
 }
 
-function resizeObserver(params, resizers) {
+function resizeObserver(params, adaptRules) {
 	const divElem = document.querySelector(params.container);
 
 	const resizeObserver = new ResizeObserver((entries) => {
@@ -73,16 +71,12 @@ function resizeObserver(params, resizers) {
 				// check in order of priority if constraints are fulfilled
 				for (let i = 0; i < params.visTypes.length; i++) {
 					let vis = params.visTypes[i].type;
-					if (resizers[vis].constraintCheck({ x: w, y: h })) {
+					if (adaptRules[vis].conditions({ x: w, y: h })) {
 						displayVis(vis);
-						resizers[vis].resize({ x: w, y: h });
+						adaptRules[vis].adapt({ x: w, y: h });
 						break;
 					}
 				}
-
-				// resizeVis({ x: w, y: h }, params);
-				// var vis = "choropleth";
-				// resizers[vis]({ x: w, y: h }, params);
 			} else {
 				// need to figure out why this part is necessary?? does contentBoxSize not always exist?
 				// h1Elem.style.fontSize = Math.max(1.5, entry.contentRect.width / 200) + 'rem';
