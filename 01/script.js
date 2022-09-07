@@ -28,7 +28,7 @@ Promise.all([
 	console.log(geo);
 
 	// color for all circles
-	const circleColor = "#D9632B"; //"#C53838";
+	const circleColor = (d) => "#D9632B"; //"#C53838";
 	// colors for circles colored by continent
 	const continents = [
 		"Africa",
@@ -49,23 +49,47 @@ Promise.all([
 		"#ff7f00",
 		"#FFE600",
 	];
-	const colorContinent = d3
-		.scaleOrdinal()
-		.domain(continents)
-		.range(continent_colors);
+	const colorContinent = (d) =>
+		d3.scaleOrdinal().domain(continents).range(continent_colors)(
+			d.properties.continent
+		);
+
+	// configure legend
+	const legendTickValues = [1000000, 100000000, 500000000, 1000000000];
+	const legendTickFormat = (d, i) =>
+		["1 million", "100 million", "500 million", "1 billion"][i];
 
 	// initialise responsive vis with parameters
 	responsiveVis({
 		visTypes: [
-			{ type: "circleMap", params: [] },
-			{ type: "circleCartogram", params: [] },
-			{ type: "bubbleChart", params: [] },
+			{
+				type: "circleMap",
+				params: {
+					projection: d3.geoEqualEarth().rotate([-20, 0, 0]),
+					circleColor: circleColor,
+					legendTickValues: legendTickValues,
+					legendTickFormat: legendTickFormat,
+				},
+			},
+			{
+				type: "circleCartogram",
+				params: {
+					projection: d3.geoEqualEarth().rotate([-20, 0, 0]),
+					circleColor: circleColor,
+					legendTickValues: legendTickValues,
+					legendTickFormat: legendTickFormat,
+				},
+			},
+			{
+				type: "bubbleChart",
+				params: {
+					circleColor: colorContinent,
+				},
+			},
 		],
 		initSize: { w: 1000, h: 600 },
 		title: "World Population by Country",
 		map: geo,
-		circleColor: circleColor,
-		colorContinent: colorContinent,
 		// map: data[0],
 		// hex: data[1],
 		// data: data[2],
