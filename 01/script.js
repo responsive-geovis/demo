@@ -87,7 +87,7 @@ Promise.all([
 				},
 			},
 		],
-		initSize: { w: 300, h: 300 },
+		initSize: { w: 1000, h: 600 },
 		title: "World Population by Country",
 		map: geo,
 		// map: data[0],
