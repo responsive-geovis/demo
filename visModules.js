@@ -372,6 +372,7 @@ visModules.circleMap = function (container, params) {
 			// i === e.length - 1 ? d + " bushels of hay" : d
 		)
 		.tickSize(5); // defaults to 5
+
 	legend.call(circleLegend);
 
 	// position legend in bottom left of map area
@@ -406,8 +407,7 @@ visModules.circleMap = function (container, params) {
 		circles.attr("stroke-width", `${1 / s}px`);
 
 		// rescale legend
-		// legend.attr("transform", `scale(${s})`);
-		legend.selectAll("text").attr("font-size", 11 / s);
+		circleLegend.adapt(s);
 	};
 
 	const conditions = function (e) {
@@ -553,8 +553,7 @@ visModules.circleCartogram = function (container, params) {
 		circles.attr("stroke-width", `${1 / s}px`);
 
 		// rescale legend
-		// legend.attr("transform", `scale(${s})`);
-		legend.selectAll("text").attr("font-size", 11 / s);
+		circleLegend.adapt(s);
 	};
 
 	const conditions = function (e) {
@@ -576,44 +575,48 @@ visModules.circleCartogram = function (container, params) {
 	return { adapt: adapt, conditions: conditions };
 };
 
-visModules.bubbleChart = function (container, params) {
+visModules.geoPackedCircles = function (container, params) {
 	// parameters specifically for this vis type
 	let params_local = params.visTypes.find(
-		(d) => d.type === "bubbleChart"
+		(d) => d.type === "geoPackedCircles"
 	).params;
+
+	const projection = params_local.projection;
 
 	const g = container
 		.select("#svg")
 		.append("g")
-		.attr("id", "bubbleChart")
+		.attr("id", "geoPackedCircles")
 		.attr("class", "visType");
 
-	// map prep projection path etc
-	const mapAR = 1.884; // aspect ratio of map
-	const mapInitSize =
-		params.initSize.w / params.initSize.h < mapAR
-			? [params.initSize.w, params.initSize.w / mapAR]
-			: [params.initSize.h * mapAR, params.initSize.h];
-	const projection = d3
-		.geoEqualEarth()
-		.rotate([-20, 0, 0])
-		.fitSize(mapInitSize, {
-			type: "Sphere",
-		});
-	let initProjScale = projection.scale();
-	let initProjTranslate = projection.translate();
+	// doesn't really matter since it will be scaled anyway
+	// but easier to have all >0 coordinates
+	projection.fitSize([1000, 1000], params.map);
 
-	// simulation for circle packing
-	let simulation = d3
-		.forceSimulation(params.map.features)
-		// 400 iterations
-		.alphaDecay(1 - Math.pow(0.001, 1 / 400));
+	// project all centroids and create simplified dataset
+	// no more projecting later on
+	const data = params.map.features.map((d) => {
+		d.properties.centroid_proj = projection(d.properties.centroid);
+		return d.properties;
+	});
+
+	// for uniform distribution...
+	// temp0.sort((a,b) => a.centroid_proj[0] > b.centroid_proj[0]).forEach((d,i) => {d.uniform_x = i})
+
+	// get 'bbox' of centroids
+	const bbox = {
+		minX: d3.min(data, (d) => d.centroid_proj[0]),
+		minY: d3.min(data, (d) => d.centroid_proj[1]),
+		maxX: d3.max(data, (d) => d.centroid_proj[0]),
+		maxY: d3.max(data, (d) => d.centroid_proj[1]),
+	};
 
 	// draw circles
-	let circles = g
+	const circles = g
 		.append("g")
+		.attr("id", "circles")
 		.selectAll("circle")
-		.data(params.map.features)
+		.data(data)
 		.enter()
 		.append("circle")
 		.attr("fill", params_local.circleColor)
@@ -623,66 +626,56 @@ visModules.bubbleChart = function (container, params) {
 			d3.select("#tooltip")
 				.attr("x", d3.select(this).attr("cx"))
 				.attr("y", d3.select(this).attr("cy"))
-				.text(d.originalTarget.__data__.properties.ADMIN);
+				.text(d.originalTarget.__data__.ADMIN);
 		})
 		.on("mouseout", function () {
 			d3.select("#tooltip").attr("x", -100).attr("y", -100);
 		});
+	// r, cx, cy set in adapt function below
 
 	const adapt = function (e) {
-		// constantly updating circle packing
 		let r = d3
 			.scaleSqrt()
-			.domain([
-				0,
-				d3.max(params.map.features, (d) => d.properties.POP_EST),
-			])
+			.domain([0, d3.max(data, (d) => d.POP_EST)])
 			.range([0, d3.min([Math.sqrt(e.x * e.y) / 5, e.x / 2, e.y / 2])]);
 
-		// keep simulation running constantly
-		// forces depend on container
-		simulation
-			.force(
-				"x",
-				d3.forceX(
-					(d) =>
-						(e.x / params.maxSize.w) *
-						projection(d.properties.centroid)[0]
-				)
-			)
-			.force(
-				"y",
-				d3.forceY(
-					(d) =>
-						(e.y / params.maxSize.h) *
-						projection(d.properties.centroid)[1]
-				)
-			)
+		let x = d3.scaleLinear().domain([bbox.minX, bbox.maxX]).range([0, e.x]);
+		let y = d3.scaleLinear().domain([bbox.minY, bbox.maxY]).range([0, e.y]);
+
+		// run a fresh simulation every time
+		let simulation = d3
+			.forceSimulation(data)
+			.force("x", d3.forceX((d) => x(d.centroid_proj[0])).strength(0.02))
+			.force("y", d3.forceY((d) => y(d.centroid_proj[1])).strength(0.02))
 			.force(
 				"collide",
-				d3.forceCollide((d) => 1 + r(d.properties.POP_EST))
+				d3.forceCollide((d) => 1 + r(d.POP_EST)).strength(1)
 			)
-			.on("tick", tick)
-			.alpha(1)
-			.restart();
+			.force(
+				"bounds",
+				forceBoundingBox(0, 0, e.x, e.y, (d) => r(d.POP_EST))
+			)
+			.stop();
 
-		function tick() {
-			// console.log("tick");
-			circles
-				.attr("r", (d) => r(d.properties.POP_EST))
-				.attr("cx", function (d) {
-					return (d.x = Math.max(
-						r(d.properties.POP_EST),
-						Math.min(e.x - r(d.properties.POP_EST), d.x)
-					));
-				})
-				.attr("cy", function (d) {
-					return (d.y = Math.max(
-						r(d.properties.POP_EST),
-						Math.min(e.y - r(d.properties.POP_EST), d.y)
-					));
-				});
-		}
+		simulation.tick(300);
+
+		// .on("tick", tick)
+		// .alpha(1)
+		// .restart();
+
+		// function tick() {
+		// console.log("tick");
+		circles
+			.attr("r", (d) => r(d.POP_EST))
+			.attr("cx", (d) => d.x)
+			.attr("cy", (d) => d.y);
+		// .attr("cy", function (d) {
+		// 	return (d.y = Math.max(
+		// 		r(d.POP_EST),
+		// 		Math.min(e.y - r(d.POP_EST), d.y)
+		// 	));
+		// });
+		// }
 	};
 
 	const conditions = function () {

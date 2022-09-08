@@ -14,7 +14,7 @@ Promise.all([d3.json("data/americas.geojson")]).then(function (data) {
 
 	const colorContinent = (d) =>
 		d3.scaleOrdinal().domain(continents).range(continent_colors)(
-			d.properties.continent
+			d.continent
 		);
 
 	// configure legend
@@ -43,13 +43,14 @@ Promise.all([d3.json("data/americas.geojson")]).then(function (data) {
 				},
 			},
 			{
-				type: "bubbleChart",
+				type: "geoPackedCircles",
 				params: {
 					circleColor: colorContinent,
+					projection: d3.geoEqualEarth().rotate([-20, 0, 0]),
 				},
 			},
 		],
-		initSize: { w: 1000, h: 600 },
+		initSize: { w: 700, h: 700 },
 		title: "Population of the Americas by Country",
 		map: geo,
 		// map: data[0],

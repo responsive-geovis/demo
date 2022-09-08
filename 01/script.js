@@ -25,8 +25,6 @@ Promise.all([
 	// 	return feature;
 	// });
 
-	console.log(geo);
-
 	// color for all circles
 	const circleColor = (d) => "#D9632B"; //"#C53838";
 	// colors for circles colored by continent
@@ -51,7 +49,7 @@ Promise.all([
 	];
 	const colorContinent = (d) =>
 		d3.scaleOrdinal().domain(continents).range(continent_colors)(
-			d.properties.continent
+			d.continent
 		);
 
 	// configure legend
@@ -81,13 +79,15 @@ Promise.all([
 				},
 			},
 			{
-				type: "bubbleChart",
+				type: "geoPackedCircles",
 				params: {
 					circleColor: colorContinent,
+					// can probably replace with a simple mercator
+					projection: d3.geoEqualEarth().rotate([-20, 0, 0]),
 				},
 			},
 		],
-		initSize: { w: 1000, h: 600 },
+		initSize: { w: 300, h: 300 },
 		title: "World Population by Country",
 		map: geo,
 		// map: data[0],

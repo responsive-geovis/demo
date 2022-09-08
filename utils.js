@@ -87,10 +87,11 @@ const legendCircle = function (context) {
 	let scale,
 		tickValues,
 		tickFormat = (d) => d,
-		tickSize = 5;
+		tickSize = 5,
+		g;
 
 	function legend(context) {
-		let g = context.select("g");
+		g = context.select("g");
 		if (!g._groups[0][0]) {
 			g = context.append("g");
 		}
@@ -127,8 +128,7 @@ const legendCircle = function (context) {
 			.append("text")
 			.attr("font-family", "'Helvetica Neue', sans-serif")
 			.attr("font-size", 11)
-			.attr("dx", 3)
-			.attr("dy", 4)
+			.attr("dominant-baseline", "central")
 			.attr("x", tickSize + scale(max) * 2)
 			.attr("y", (d) => scale(d) * 2)
 			.text(tickFormat);
@@ -150,5 +150,80 @@ const legendCircle = function (context) {
 		return arguments.length ? ((tickValues = _), legend) : tickValues;
 	};
 
+	legend.adapt = function (s) {
+		g.attr("stroke-width", `${1 / s}px`);
+		g.selectAll("line").attr("stroke-dasharray", `${4 / s}, ${2 / s}`);
+		g.selectAll("text").attr("font-size", 11 / s);
+	};
+
 	return legend;
 };
+
+// custom function based on the force functions included in d3-force
+function forceBoundingBox(minX, minY, maxX, maxY, radius) {
+	var nodes,
+		strength = 1;
+
+	if (minX == null) minX = 0;
+	if (minY == null) minY = 0;
+	if (maxX == null) maxX = 0;
+	if (maxY == null) maxY = 0;
+
+	if (typeof radius !== "function")
+		radius = (d) => (radius == null ? 1 : +radius);
+
+	function force() {
+		var i,
+			n = nodes.length,
+			node,
+			r;
+
+		for (i = 0; i < n; ++i) {
+			node = nodes[i];
+			r = radius(node);
+			node.x =
+				node.x < minX + r
+					? minX + r
+					: node.x > maxX - r
+					? maxX - r
+					: node.x;
+			node.y =
+				node.y < minY + r
+					? minY + r
+					: node.y > maxY - r
+					? maxY - r
+					: node.y;
+			// console.log(minX, maxX, minY, maxY, r);
+		}
+	}
+
+	force.initialize = function (_) {
+		nodes = _;
+	};
+
+	force.minX = function (_) {
+		return arguments.length ? ((minX = +_), force) : minX;
+	};
+
+	force.minY = function (_) {
+		return arguments.length ? ((minY = +_), force) : minY;
+	};
+
+	force.maxX = function (_) {
+		return arguments.length ? ((maxX = +_), force) : maxX;
+	};
+
+	force.maxY = function (_) {
+		return arguments.length ? ((maxY = +_), force) : maxY;
+	};
+
+	force.radius = function (_) {
+		return arguments.length ? ((radius = +_), force) : radius;
+	};
+
+	force.strength = function (_) {
+		return arguments.length ? ((strength = +_), force) : strength;
+	};
+
+	return force;
+}
