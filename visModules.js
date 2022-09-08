@@ -469,7 +469,7 @@ visModules.circleCartogram = function (container, params) {
 		)
 		.force(
 			"collide",
-			d3.forceCollide((d) => 1 + r(d.properties.POP_EST))
+			d3.forceCollide((d) => r(d.properties.POP_EST))
 		)
 		.stop();
 	dorlingSimulation.tick(200);
@@ -647,10 +647,7 @@ visModules.geoPackedCircles = function (container, params) {
 			.forceSimulation(data)
 			.force("x", d3.forceX((d) => x(d.centroid_proj[0])).strength(0.02))
 			.force("y", d3.forceY((d) => y(d.centroid_proj[1])).strength(0.02))
-			.force(
-				"collide",
-				d3.forceCollide((d) => 1 + r(d.POP_EST)).strength(1)
-			)
+			.force("collide", d3.forceCollide((d) => r(d.POP_EST)).strength(1))
 			.force(
 				"bounds",
 				forceBoundingBox(0, 0, e.x, e.y, (d) => r(d.POP_EST))
