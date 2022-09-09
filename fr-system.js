@@ -35,13 +35,16 @@ function responsiveVis(params) {
 	const tooltip = svg.append("text").attr("id", "tooltip");
 
 	// initalise all selected vis types
-	const adaptRules = {}; // add resizer functions into this
 	params.visTypes.forEach(function (d) {
-		adaptRules[d.type] = visModules[d.type](con, params);
+		let v = visModules[d.type](con, params);
+		d.adapt = v.adapt;
+		d.conditions = v.conditions;
 	});
 
 	// listen to resize events and resize
-	resizeObserver(params, adaptRules);
+	resizeObserver(params);
+
+	return params;
 }
 
 function resizeObserver(params, adaptRules) {
@@ -70,10 +73,10 @@ function resizeObserver(params, adaptRules) {
 				// update vis
 				// check in order of priority if constraints are fulfilled
 				for (let i = 0; i < params.visTypes.length; i++) {
-					let vis = params.visTypes[i].type;
-					if (adaptRules[vis].conditions({ x: w, y: h })) {
-						displayVis(vis);
-						adaptRules[vis].adapt({ x: w, y: h });
+					let vis = params.visTypes[i];
+					if (vis.conditions({ x: w, y: h })) {
+						displayVis(vis.type);
+						vis.adapt({ x: w, y: h });
 						break;
 					}
 				}
