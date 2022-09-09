@@ -1,5 +1,7 @@
 "use strict";
 
+let vis;
+
 //load data
 Promise.all([
 	d3.json("data/france-metro-topo.json"),
@@ -90,7 +92,7 @@ Promise.all([
 	let colorScale = d3.scaleOrdinal().domain(categories).range(colors);
 
 	// initialise responsive vis with parameters
-	responsiveVis({
+	vis = responsiveVis({
 		visTypes: [
 			{
 				type: "choropleth",

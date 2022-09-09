@@ -1,5 +1,7 @@
 "use strict";
 
+let vis;
+
 // load data
 Promise.all([
 	d3.json("data/world_with_continent.json"),
@@ -58,7 +60,7 @@ Promise.all([
 		["1 million", "100 million", "500 million", "1 billion"][i];
 
 	// initialise responsive vis with parameters
-	responsiveVis({
+	vis = responsiveVis({
 		visTypes: [
 			{
 				type: "circleMap",

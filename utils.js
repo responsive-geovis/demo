@@ -227,3 +227,31 @@ function forceBoundingBox(minX, minY, maxX, maxY, radius) {
 
 	return force;
 }
+
+function drawLandscape(vis, colors) {
+	var canvas = document.createElement("canvas");
+	canvas.setAttribute("width", vis.maxSize.w);
+	canvas.setAttribute("height", vis.maxSize.h);
+	// document.body.appendChild(canvas);
+
+	let c = canvas.getContext("2d");
+
+	// download.href = map.getCanvas().toDataURL();
+	// download.download = "screenshot.png";
+	// download.click();
+	// to open image in new tab (requires popup permission) instead:
+
+	for (let x = 0; x < vis.maxSize.w; x++) {
+		for (let y = 0; y < vis.maxSize.h; y++) {
+			for (let i = 0; i < vis.visTypes.length; i++) {
+				if (vis.visTypes[i].conditions({ x: x, y: y })) {
+					c.fillStyle = colors[i];
+					c.fillRect(x, y, 1, 1);
+					break;
+				}
+			}
+		}
+	}
+
+	window.open(canvas.toDataURL());
+}

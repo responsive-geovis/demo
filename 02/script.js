@@ -1,5 +1,7 @@
 "use strict";
 
+let vis;
+
 // load data
 Promise.all([d3.json("data/americas.geojson")]).then(function (data) {
 	let geo = data[0];
@@ -22,7 +24,7 @@ Promise.all([d3.json("data/americas.geojson")]).then(function (data) {
 	const legendTickFormat = (d, i) => d / 1000000 + " million";
 
 	// initialise responsive vis with parameters
-	responsiveVis({
+	vis = responsiveVis({
 		visTypes: [
 			{
 				type: "circleMap",
