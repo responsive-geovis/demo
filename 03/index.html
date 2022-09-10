@@ -14,33 +14,34 @@
 
 		<script src="https://d3js.org/d3.v7.min.js"></script>
 		<script src="https://unpkg.com/topojson@3"></script>
+		<script src="../lib/d3-hexjson.min.js"></script>
 
-		<script src="responsive-geovis-lib.js"></script>
-		<script src="visModules.js"></script>
+		<!-- responsive vis system + view states -->
+		<script src="../utils.js"></script>
+		<script src="../fr-system.js"></script>
+		<script src="../visModules.js"></script>
 	</head>
 	<body>
 		<div>
-			<h1>Responsive GeoVis</h1>
-			<p>
-				Resize the visualization using the handle in the botton right
-				and watch it update.
-			</p>
-		</div>
-		<div>
-			<table>
-				<tr>
-					<th>width</th>
-					<th>height</th>
-					<th>aspect ratio</th>
-					<th>area</th>
-				</tr>
-				<tr>
-					<td><span id="widthOutput"></span>px</td>
-					<td><span id="heightOutput"></span>px</td>
-					<td><span id="arOutput"></span></td>
-					<td><span id="areaOutput"></span>px</td>
-				</tr>
-			</table>
+			<strong> Fluid Responsiveness for Geographic Visualizations</strong
+			><br />
+			Demo #03 | <a href="../">View other demos</a> |
+			<button
+				onclick="drawLandscape(vis, ['#8dd3c7', '#ffffb3', '#bebada'])"
+			>
+				View landscape</button
+			><br />
+			<em>
+				Resize the container using the handle in the botton right and
+				watch the visualization update (Chrome/Firefox only).
+			</em>
+			<br />
+			<ul>
+				<li>Width: <span id="widthOutput"></span>px</li>
+				<li>Height: <span id="heightOutput"></span>px</li>
+				<li>Aspect ratio: <span id="arOutput"></span></li>
+				<li>Area: <span id="areaOutput"></span>px</li>
+			</ul>
 		</div>
 
 		<div id="container"></div>

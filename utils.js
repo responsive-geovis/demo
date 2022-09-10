@@ -252,6 +252,9 @@ function drawLandscape(vis, colors) {
 			}
 		}
 	}
+	// remove everything under min size
+	c.fillStyle = "#fff";
+	c.fillRect(0, 0, vis.minSize.w, vis.minSize.h);
 
 	window.open(canvas.toDataURL());
 }

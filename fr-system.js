@@ -10,9 +10,9 @@ function responsiveVis(params) {
 		.attr("class", "input hidden");
 
 	// default parameters
-	params.initSize = params.initSize ? params.initSize : { w: 600, h: 600 };
-	params.maxSize = params.maxSize ? params.maxSize : { w: 1000, h: 1000 };
-	params.minSize = params.minSize ? params.minSize : { w: 25, h: 25 };
+	params.initSize = params.initSize ? params.initSize : { w: 600, h: 400 };
+	params.maxSize = params.maxSize ? params.maxSize : { w: 1000, h: 700 };
+	params.minSize = params.minSize ? params.minSize : { w: 50, h: 50 };
 	params.container = params.container ? params.container : "#container";
 	// throw warning if vistypes is undefined
 
