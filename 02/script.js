@@ -12,7 +12,7 @@ Promise.all([d3.json("data/americas.geojson")]).then(function (data) {
 	// colors for circles colored by continent
 	const continents = ["North America", "South America"];
 	// from ColorBrewer 6-class Set1
-	const continent_colors = ["#984ea3", "#FFE600"];
+	const continent_colors = ["#fc8d62", "#a6d854"];
 
 	const colorContinent = (d) =>
 		d3.scaleOrdinal().domain(continents).range(continent_colors)(

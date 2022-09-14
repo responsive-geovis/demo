@@ -32,22 +32,22 @@ Promise.all([
 	// colors for circles colored by continent
 	const continents = [
 		"Africa",
-		"Antarctica",
-		"Asia",
-		"Europe",
 		"North America",
-		"Oceania",
+		"Europe",
+		"Asia",
 		"South America",
+		"Oceania",
+		"Antarctica",
 	];
-	// ColorBrewer 6-class Set1 plus grey (#bbb)
+	// ColorBrewer 7-class Set2
 	const continent_colors = [
-		"#e41a1c",
-		"#bbb",
-		"#377eb8",
-		"#4daf4a",
-		"#984ea3",
-		"#ff7f00",
-		"#FFE600",
+		"#66c2a5",
+		"#fc8d62",
+		"#8da0cb",
+		"#e78ac3",
+		"#a6d854",
+		"#ffd92f",
+		"#e5c494",
 	];
 	const colorContinent = (d) =>
 		d3.scaleOrdinal().domain(continents).range(continent_colors)(

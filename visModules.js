@@ -349,7 +349,7 @@ visModules.circleMap = function (container, params) {
 		.attr("cx", (d) => projection(d.properties.centroid)[0])
 		.attr("cy", (d) => projection(d.properties.centroid)[1])
 		.attr("fill", params_local.circleColor)
-		.attr("fill-opacity", 0.3)
+		.attr("fill-opacity", 0.4)
 		.attr("stroke", params_local.circleColor)
 		.on("mouseover", function (d) {
 			d3.select("#tooltip")
@@ -485,7 +485,7 @@ visModules.circleCartogram = function (container, params) {
 		.enter()
 		.append("circle")
 		.attr("fill", params_local.circleColor)
-		.attr("fill-opacity", 0.3)
+		.attr("fill-opacity", 0.4)
 		.attr("r", (d) => r(d.properties.POP_EST))
 		.attr("cx", (d) => d.properties.dorlingX)
 		.attr("cy", (d) => d.properties.dorlingY)
@@ -620,7 +620,7 @@ visModules.geoPackedCircles = function (container, params) {
 		.enter()
 		.append("circle")
 		.attr("fill", params_local.circleColor)
-		.attr("fill-opacity", 0.3)
+		.attr("fill-opacity", 0.4)
 		.attr("stroke", params_local.circleColor)
 		.on("mouseover", function (d) {
 			d3.select("#tooltip")
