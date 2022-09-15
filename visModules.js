@@ -96,7 +96,7 @@ visModules.choropleth = function (container, params) {
 		.select(".mapMesh")
 		.attr("d", path)
 		.style("fill", "transparent")
-		.style("stroke", "#444")
+		.style("stroke", "#fff")
 		.style("stroke-width", "0.5px");
 
 	// position + draw legend on top
