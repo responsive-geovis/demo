@@ -229,6 +229,9 @@ function forceBoundingBox(minX, minY, maxX, maxY, radius) {
 }
 
 function drawLandscape(vis, colors) {
+	// d3.schemeDark2
+	colors = colors ? colors : d3.schemeSet3;
+
 	var canvas = document.createElement("canvas");
 	canvas.setAttribute("width", vis.maxSize.w);
 	canvas.setAttribute("height", vis.maxSize.h);
