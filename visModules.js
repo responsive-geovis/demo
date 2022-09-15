@@ -69,7 +69,14 @@ visModules.choropleth = function (container, params) {
 	});
 
 	// get smallest area
-	const minArea = d3.min(geo.features, (d) => d.area);
+
+	let filterFunc =
+		typeof local.params.conditions.minAreaFilter === "function"
+			? local.params.conditions.minAreaFilter
+			: (d) => true;
+	console.log(geo.features);
+	const minArea = d3.min(geo.features.filter(filterFunc), (d) => d.area);
+	console.log(minArea);
 	// console.log(
 	// 	minArea
 	// 	// params.name(geo.features[d3.minIndex(geo.features, (d) => d.area)])
