@@ -38,6 +38,9 @@ li {
 }
 
 #tooltip {
+	/*remove*/
+	display: none;
+
 	font-size: 12px;
 	text-anchor: middle;
 	dominant-baseline: central;
