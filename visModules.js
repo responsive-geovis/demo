@@ -251,7 +251,7 @@ visModules.wafflechart = function (container, params) {
 		.attr("id", "wafflechart")
 		.attr("class", "visType");
 
-	const countries = ["England", "Scotland", "Wales", "Northern Ireland"].map(
+	const countries = ["Scotland", "Northern Ireland", "Wales", "England"].map(
 		(d) => ({
 			country: d,
 			data: params.data
