@@ -632,10 +632,12 @@ visModules.geoPackedCircles = function (container, params) {
 
 	// project all centroids and create simplified dataset
 	// no more projecting later on
-	const data = params.map.features.map((d) => {
-		d.properties.centroid_proj = projection(d.properties.centroid);
-		return d.properties;
-	});
+	const data = params.map.features
+		.map((d) => {
+			d.properties.centroid_proj = projection(d.properties.centroid);
+			return d.properties;
+		})
+		.filter((d) => d.ADMIN !== "Antarctica");
 
 	// for uniform distribution...
 	// temp0.sort((a,b) => a.centroid_proj[0] > b.centroid_proj[0]).forEach((d,i) => {d.uniform_x = i})
