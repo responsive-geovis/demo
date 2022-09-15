@@ -93,6 +93,7 @@ Promise.all([
 			{ type: "wafflechart", params: {} },
 		],
 		initSize: { w: 700, h: 700 },
+		minSize: { w: 150, h: 150 },
 		title: "UK General Election 2019",
 		map: data[0],
 		hex: data[1],
