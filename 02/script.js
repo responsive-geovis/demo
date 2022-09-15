@@ -8,15 +8,19 @@ Promise.all([d3.json("data/americas.geojson")]).then(function (data) {
 	console.log(geo);
 
 	// color for all circles
-	const circleColor = (d) => "#D9632B"; //"#C53838";
+	// const circleColor = (d) => "#D9632B"; //"#C53838";
 	// colors for circles colored by continent
 	const continents = ["North America", "South America"];
 	// from ColorBrewer 6-class Set1
-	const continent_colors = ["#fc8d62", "#a6d854"];
+	const continent_colors = [d3.schemeTableau10[0], d3.schemeTableau10[3]];
 
 	const colorContinent = (d) =>
 		d3.scaleOrdinal().domain(continents).range(continent_colors)(
 			d.continent
+		);
+	const circleColor = (d) =>
+		d3.scaleOrdinal().domain(continents).range(continent_colors)(
+			d.properties.continent
 		);
 
 	// configure legend
@@ -33,6 +37,11 @@ Promise.all([d3.json("data/americas.geojson")]).then(function (data) {
 					circleColor: circleColor,
 					legendTickValues: legendTickValues,
 					legendTickFormat: legendTickFormat,
+					conditions: {
+						minCircleRadius: 1,
+						maxAspectRatioDiff: 1.5,
+						// maxAspectRatioDiff: 3,
+					},
 				},
 			},
 			{
@@ -42,6 +51,11 @@ Promise.all([d3.json("data/americas.geojson")]).then(function (data) {
 					circleColor: circleColor,
 					legendTickValues: legendTickValues,
 					legendTickFormat: legendTickFormat,
+					conditions: {
+						minCircleRadius: 1,
+						maxAspectRatioDiff: 1.5,
+						// maxAspectRatioDiff: 3,
+					},
 				},
 			},
 			{

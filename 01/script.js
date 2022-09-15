@@ -28,30 +28,28 @@ Promise.all([
 	// });
 
 	// color for all circles
-	const circleColor = (d) => "#D9632B"; //"#C53838";
+	// const circleColor = (d) => "#D9632B"; //"#C53838";
+
 	// colors for circles colored by continent
 	const continents = [
-		"Africa",
 		"North America",
-		"Europe",
 		"Asia",
-		"South America",
 		"Oceania",
+		"South America",
+		"Europe",
+		"Africa",
 		"Antarctica",
 	];
-	// ColorBrewer 7-class Set2
-	const continent_colors = [
-		"#66c2a5",
-		"#fc8d62",
-		"#8da0cb",
-		"#e78ac3",
-		"#a6d854",
-		"#ffd92f",
-		"#e5c494",
-	];
+
+	const continent_colors = d3.schemeTableau10;
+
 	const colorContinent = (d) =>
 		d3.scaleOrdinal().domain(continents).range(continent_colors)(
 			d.continent
+		);
+	const circleColor = (d) =>
+		d3.scaleOrdinal().domain(continents).range(continent_colors)(
+			d.properties.continent
 		);
 
 	// configure legend
@@ -69,6 +67,10 @@ Promise.all([
 					circleColor: circleColor,
 					legendTickValues: legendTickValues,
 					legendTickFormat: legendTickFormat,
+					conditions: {
+						minCircleRadius: 1,
+						maxAspectRatioDiff: 1.5,
+					},
 				},
 			},
 			{
@@ -78,6 +80,10 @@ Promise.all([
 					circleColor: circleColor,
 					legendTickValues: legendTickValues,
 					legendTickFormat: legendTickFormat,
+					conditions: {
+						minCircleRadius: 1,
+						maxAspectRatioDiff: 1.5,
+					},
 				},
 			},
 			{

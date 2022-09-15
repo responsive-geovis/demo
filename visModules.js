@@ -195,6 +195,8 @@ visModules.hexmap = function (container, params) {
 	// 	.attr("text-anchor", "middle")
 	// 	.text(function(hex) {return hex.key;});
 
+	// get size of hex, check for min hex size
+
 	const adapt = function (e) {
 		const s = hexAR > e.x / e.y ? e.x / hexInitSize.w : e.y / hexInitSize.h;
 		g.attr("transform", `scale(${s})`);
@@ -288,9 +290,8 @@ visModules.wafflechart = function (container, params) {
 
 visModules.circleMap = function (container, params) {
 	// parameters specifically for this vis type
-	let params_local = params.visTypes.find(
-		(d) => d.type === "circleMap"
-	).params;
+	let local = params.visTypes.find((d) => d.type === "circleMap");
+	let params_local = local.params;
 
 	const projection = params_local.projection;
 
@@ -411,7 +412,7 @@ visModules.circleMap = function (container, params) {
 	};
 
 	const conditions = function (e) {
-		const s =
+		let s =
 			mapAR > e.x / e.y
 				? e.x / mapInitBBox.width
 				: e.y / mapInitBBox.height;
@@ -419,10 +420,11 @@ visModules.circleMap = function (container, params) {
 
 		return (
 			// min r - at least 90% of circles visible
-			r(lower_bound) * s > 1 &&
+			r(lower_bound) * s > local.params.conditions.minCircleRadius &&
 			// aspect ratio difference - no more than 1/3 white space
-			containerAR / mapAR >= 0.67 &&
-			containerAR / mapAR <= 1.5
+			containerAR / mapAR >=
+				1 / local.params.conditions.maxAspectRatioDiff &&
+			containerAR / mapAR <= local.params.conditions.maxAspectRatioDiff
 		);
 	};
 
@@ -431,9 +433,8 @@ visModules.circleMap = function (container, params) {
 
 visModules.circleCartogram = function (container, params) {
 	// parameters specifically for this vis type
-	let params_local = params.visTypes.find(
-		(d) => d.type === "circleCartogram"
-	).params;
+	let local = params.visTypes.find((d) => d.type === "circleCartogram");
+	let params_local = local.params;
 
 	const projection = params_local.projection;
 
@@ -484,7 +485,7 @@ visModules.circleCartogram = function (container, params) {
 		.data(params.map.features)
 		.enter()
 		.append("circle")
-		.attr("fill", params_local.circleColor)
+		.attr("fill", (d) => params_local.circleColor(d))
 		.attr("fill-opacity", 0.4)
 		.attr("r", (d) => r(d.properties.POP_EST))
 		.attr("cx", (d) => d.properties.dorlingX)
@@ -565,10 +566,12 @@ visModules.circleCartogram = function (container, params) {
 
 		// min r - at least 90% of circles visible
 		return (
-			r(lower_bound) * s > 1 &&
+			// min r - at least 90% of circles visible
+			r(lower_bound) * s > local.params.conditions.minCircleRadius &&
 			// aspect ratio difference - no more than 1/3 white space
-			containerAR / mapAR >= 0.67 &&
-			containerAR / mapAR <= 1.5
+			containerAR / mapAR >=
+				1 / local.params.conditions.maxAspectRatioDiff &&
+			containerAR / mapAR <= local.params.conditions.maxAspectRatioDiff
 		);
 	};
 
