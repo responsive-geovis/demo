@@ -22,9 +22,8 @@ const visModules = {};
 
 visModules.choropleth = function (container, params) {
 	// parameters specifically for this vis type
-	let params_local = params.visTypes.find(
-		(d) => d.type === "choropleth"
-	).params;
+	let local = params.visTypes.find((d) => d.type === "choropleth");
+	let params_local = local.params;
 
 	const projection = params_local.projection;
 
@@ -128,13 +127,23 @@ visModules.choropleth = function (container, params) {
 			mapAR > e.x / e.y
 				? e.x / mapInitBBox.width
 				: e.y / mapInitBBox.height;
-		return minArea * s > params_local.conditions.minAreaSize;
+		const containerAR = e.x / e.y;
+
+		return (
+			minArea * s > params_local.conditions.minAreaSize &&
+			// aspect ratio difference
+			containerAR / mapAR >=
+				1 / local.params.conditions.maxAspectRatioDiff &&
+			containerAR / mapAR <= local.params.conditions.maxAspectRatioDiff
+		);
 	};
 
 	return { adapt: adapt, conditions: conditions };
 };
 
 visModules.hexmap = function (container, params) {
+	let local = params.visTypes.find((d) => d.type === "hexmap");
+
 	const hexAR = 0.8;
 	const hexInitSize =
 		params.initSize.w / params.initSize.h > hexAR
@@ -153,6 +162,11 @@ visModules.hexmap = function (container, params) {
 	// Render the hexes
 	var hexes = d3.renderHexJSON(params.hex, width, height);
 
+	// get width of first hex (which is the same as all others)
+	let hexWidth =
+		d3.max(hexes[0].vertices, (d) => d.x) -
+		d3.min(hexes[0].vertices, (d) => d.x);
+
 	// Bind the hexes to g elements of the svg and position them
 	var hexmap = g
 		.selectAll("g")
@@ -166,6 +180,7 @@ visModules.hexmap = function (container, params) {
 	// Draw the polygons around each hex's centre
 	hexmap
 		.append("polygon")
+		.attr("class", "hex")
 		.attr("points", function (hex) {
 			return hex.points;
 		})
@@ -180,6 +195,8 @@ visModules.hexmap = function (container, params) {
 				)
 			)
 		);
+
+	console.log(hexmap);
 
 	// Legend
 	const legend = g
@@ -204,8 +221,16 @@ visModules.hexmap = function (container, params) {
 	};
 
 	const conditions = function (e) {
-		// return e.x * e.y > 25000;
-		return e.x > 300;
+		const s = hexAR > e.x / e.y ? e.x / hexInitSize.w : e.y / hexInitSize.h;
+		const containerAR = e.x / e.y;
+
+		return (
+			hexWidth * s > local.params.conditions.minHexSize &&
+			// aspect ratio difference
+			containerAR / hexAR >=
+				1 / local.params.conditions.maxAspectRatioDiff &&
+			containerAR / hexAR <= local.params.conditions.maxAspectRatioDiff
+		);
 	};
 
 	return { adapt: adapt, conditions: conditions };
@@ -527,7 +552,9 @@ visModules.circleCartogram = function (container, params) {
 	const legendBBox = legend.node().getBBox();
 	legend.attr(
 		"transform",
-		`translate(${5},${mapInitBBox.height - legendBBox.height - 5})`
+		`translate(${local.params.legendPosLeft},${
+			mapInitBBox.height - legendBBox.height - 5
+		})`
 	);
 	// for custom positioning
 	// .attr("transform", `translate(${params_local.legendPosition[0]},${params_local.legendPosition[1]})`)

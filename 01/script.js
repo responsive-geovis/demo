@@ -80,6 +80,7 @@ Promise.all([
 					circleColor: circleColor,
 					legendTickValues: legendTickValues,
 					legendTickFormat: legendTickFormat,
+					legendPosLeft: 460,
 					conditions: {
 						minCircleRadius: 1,
 						maxAspectRatioDiff: 1.5,

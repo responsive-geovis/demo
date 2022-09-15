@@ -24,7 +24,7 @@ Promise.all([d3.json("data/americas.geojson")]).then(function (data) {
 		);
 
 	// configure legend
-	const legendTickValues = [1000000, 50000000, 150000000, 300000000];
+	const legendTickValues = [1000000, 25000000, 75000000, 150000000];
 	const legendTickFormat = (d, i) => d / 1000000 + " million";
 
 	// initialise responsive vis with parameters
@@ -51,6 +51,7 @@ Promise.all([d3.json("data/americas.geojson")]).then(function (data) {
 					circleColor: circleColor,
 					legendTickValues: legendTickValues,
 					legendTickFormat: legendTickFormat,
+					legendPosLeft: 5,
 					conditions: {
 						minCircleRadius: 1,
 						maxAspectRatioDiff: 1.5,

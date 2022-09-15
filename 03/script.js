@@ -75,10 +75,19 @@ Promise.all([
 					legendPosition: [280, 115], // relative to initSize
 					conditions: {
 						minAreaSize: 2,
+						maxAspectRatioDiff: 2,
 					},
 				},
 			},
-			{ type: "hexmap", params: {} },
+			{
+				type: "hexmap",
+				params: {
+					conditions: {
+						minHexSize: 5,
+						maxAspectRatioDiff: 2,
+					},
+				},
+			},
 			{ type: "wafflechart", params: {} },
 		],
 		initSize: { w: 700, h: 700 },
