@@ -39,8 +39,8 @@ Promise.all([d3.json("data/americas.geojson")]).then(function (data) {
 					legendTickFormat: legendTickFormat,
 					conditions: {
 						minCircleRadius: 1,
-						maxAspectRatioDiff: 1.5,
-						// maxAspectRatioDiff: 3,
+						// maxAspectRatioDiff: 1.5,
+						maxAspectRatioDiff: 3,
 					},
 				},
 			},
@@ -54,8 +54,8 @@ Promise.all([d3.json("data/americas.geojson")]).then(function (data) {
 					legendPosLeft: 5,
 					conditions: {
 						minCircleRadius: 1,
-						maxAspectRatioDiff: 1.5,
-						// maxAspectRatioDiff: 3,
+						// maxAspectRatioDiff: 1.5,
+						maxAspectRatioDiff: 3,
 					},
 				},
 			},
