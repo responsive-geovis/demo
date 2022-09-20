@@ -1,5 +1,11 @@
 body {
-	font-family: "Arial", sans-serif;
+	font-family: sans-serif;
+}
+
+#index-container {
+	max-width: 670px;
+	margin: auto;
+	text-align: center;
 }
 
 svg text,
@@ -45,4 +51,30 @@ li {
 	text-anchor: middle;
 	dominant-baseline: central;
 	pointer-events: none;
+}
+
+a.demolink {
+	display: inline-block;
+	position: relative;
+	padding: 10px;
+	background-color: #f4f4f4;
+	border-radius: 7px;
+	border: 1px solid #acacac;
+	text-decoration: none;
+	color: #000;
+	margin: 5px;
+	text-align: left;
+	width: 300px;
+	height: 165px;
+	vertical-align: top;
+}
+a.demolink:hover {
+	background-color: #ddd;
+}
+a.demolink img {
+	width: 300px;
+	height: 125px;
+	position: absolute;
+	bottom: 10px;
+	left: 10px;
 }
