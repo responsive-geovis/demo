@@ -27,7 +27,13 @@
 			><br />
 			Demo #3: UK General Election 2019 |
 			<a href="../">View other demos</a> |
-			<button onclick="drawLandscape(vis)">View landscape</button><br />
+			<input type="checkbox" id="show-landscape-overlay" /><label
+				for="show-landscape-overlay"
+				>Show view landscape overlay</label
+			>
+			|
+			<button id="export-landscape">Export view landscape</button><br />
+
 			<em>
 				Resize the container using the handle in the botton right and
 				watch the visualization update (Chrome/Firefox only).
@@ -41,7 +47,10 @@
 			</ul>
 		</div>
 
-		<div id="container"></div>
+		<div id="outer-container">
+			<div id="container"></div>
+			<div id="landscape-overlay"></div>
+		</div>
 
 		<script type="text/javascript" src="script.js"></script>
 	</body>

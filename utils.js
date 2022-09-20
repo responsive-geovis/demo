@@ -228,7 +228,7 @@ function forceBoundingBox(minX, minY, maxX, maxY, radius) {
 	return force;
 }
 
-function drawLandscape(vis, colors) {
+function viewLandscape(vis, colors) {
 	// d3.schemeDark2
 	colors = colors ? colors : d3.schemeSet3;
 
@@ -246,8 +246,8 @@ function drawLandscape(vis, colors) {
 
 	for (let x = 0; x < vis.maxSize.w; x++) {
 		for (let y = 0; y < vis.maxSize.h; y++) {
-			for (let i = 0; i < vis.visTypes.length; i++) {
-				if (vis.visTypes[i].conditions({ x: x, y: y })) {
+			for (let i = 0; i < vis.viewStates.length; i++) {
+				if (vis.viewStates[i].conditions({ x: x, y: y })) {
 					c.fillStyle = colors[i];
 					c.fillRect(x, y, 1, 1);
 					break;
@@ -259,5 +259,24 @@ function drawLandscape(vis, colors) {
 	c.fillStyle = "#fff";
 	c.fillRect(0, 0, vis.minSize.w, vis.minSize.h);
 
-	window.open(canvas.toDataURL());
+	return canvas.toDataURL();
+}
+function createExportButton(landscape) {
+	d3.select("#export-landscape").on("click", () => window.open(landscape));
+}
+function createLandscapeOverlay(landscape) {
+	d3.select("#landscape-overlay")
+		.style("height", vis.maxSize.h + "px")
+		.style("width", vis.maxSize.w + "px")
+		.style("background-image", `url(${landscape})`)
+		.style("display", "none");
+	d3.select("#show-landscape-overlay")
+		.property("checked", false)
+		.on("change", () => {
+			let c = d3.select("#show-landscape-overlay").property("checked");
+			d3.select("#landscape-overlay").style(
+				"display",
+				c ? "block" : "none"
+			);
+		});
 }

@@ -8,6 +8,17 @@ body {
 	text-align: center;
 }
 
+#outer-container {
+	position: relative;
+}
+#landscape-overlay {
+	position: absolute;
+	left: 1px;
+	top: 1px;
+	pointer-events: none;
+	opacity: 0.35;
+}
+
 svg text,
 #chart-overlay {
 	font-family: sans-serif;

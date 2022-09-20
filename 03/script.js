@@ -108,4 +108,9 @@ Promise.all([
 		// values: (d) => (d ? d.pct_rmn - d.pct_lev : undefined),
 		// name: (feature) => feature.properties.HBName,
 	});
+
+	// create landscape overlay + export button
+	const landscape = viewLandscape(vis);
+	createExportButton(landscape);
+	createLandscapeOverlay(landscape);
 });

@@ -74,9 +74,7 @@ viewStates.choropleth = function (container, params) {
 		typeof local.params.conditions.minAreaFilter === "function"
 			? local.params.conditions.minAreaFilter
 			: (d) => true;
-	console.log(geo.features);
 	const minArea = d3.min(geo.features.filter(filterFunc), (d) => d.area);
-	console.log(minArea);
 	// console.log(
 	// 	minArea
 	// 	// params.name(geo.features[d3.minIndex(geo.features, (d) => d.area)])
@@ -202,8 +200,6 @@ viewStates.hexmap = function (container, params) {
 				)
 			)
 		);
-
-	console.log(hexmap);
 
 	// Legend
 	const legend = g
@@ -695,23 +691,10 @@ viewStates.geoPackedCircles = function (container, params) {
 
 		simulation.tick(300);
 
-		// .on("tick", tick)
-		// .alpha(1)
-		// .restart();
-
-		// function tick() {
-		// console.log("tick");
 		circles
 			.attr("r", (d) => r(d.POP_EST))
 			.attr("cx", (d) => d.x)
 			.attr("cy", (d) => d.y);
-		// .attr("cy", function (d) {
-		// 	return (d.y = Math.max(
-		// 		r(d.POP_EST),
-		// 		Math.min(e.y - r(d.POP_EST), d.y)
-		// 	));
-		// });
-		// }
 	};
 
 	const conditions = function () {
