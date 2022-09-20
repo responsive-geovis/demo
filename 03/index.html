@@ -16,21 +16,17 @@
 		<script src="https://unpkg.com/topojson@3"></script>
 		<script src="../lib/d3-hexjson.min.js"></script>
 
-		<!-- responsive vis system + view states -->
+		<!-- fluid geovis library + view state library -->
 		<script src="../utils.js"></script>
-		<script src="../fr-system.js"></script>
-		<script src="../visModules.js"></script>
+		<script src="../fluidGeoVis.js"></script>
+		<script src="../viewStates.js"></script>
 	</head>
 	<body>
 		<div>
 			<strong> Fluid Responsiveness for Geographic Visualizations</strong
 			><br />
 			Demo #03 | <a href="../">View other demos</a> |
-			<button
-				onclick="drawLandscape(vis)"
-			>
-				View landscape</button
-			><br />
+			<button onclick="drawLandscape(vis)">View landscape</button><br />
 			<em>
 				Resize the container using the handle in the botton right and
 				watch the visualization update (Chrome/Firefox only).
