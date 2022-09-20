@@ -29,7 +29,7 @@ Promise.all([d3.json("data/americas.geojson")]).then(function (data) {
 
 	// initialise responsive vis with parameters
 	vis = responsiveVis({
-		visTypes: [
+		viewStates: [
 			{
 				type: "circleMap",
 				params: {

@@ -67,7 +67,7 @@ Promise.all([
 
 	// initialise responsive vis with parameters
 	vis = responsiveVis({
-		visTypes: [
+		viewStates: [
 			{
 				type: "choropleth",
 				params: {

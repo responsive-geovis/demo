@@ -1,15 +1,15 @@
 "use strict";
 
 // different vis modules can be added to this object
-const visModules = {};
+const viewStates = {};
 
 // TEMPLATE
-// visModules.barchart = function (container, params) {
+// viewStates.barchart = function (container, params) {
 // 	const g = container
 // 		.select("#svg")
 // 		.append("g")
 // 		.attr("id", "barchart")
-// 		.attr("class", "visType");
+// 		.attr("class", "viewState");
 
 // 	const adapt = function (e) {};
 
@@ -20,9 +20,9 @@ const visModules = {};
 // 	return { adapt: adapt, conditions: conditions };
 // };
 
-visModules.choropleth = function (container, params) {
+viewStates.choropleth = function (container, params) {
 	// parameters specifically for this vis type
-	let local = params.visTypes.find((d) => d.type === "choropleth");
+	let local = params.viewStates.find((d) => d.type === "choropleth");
 	let params_local = local.params;
 
 	const projection = params_local.projection;
@@ -32,7 +32,7 @@ visModules.choropleth = function (container, params) {
 		.select("#svg")
 		.append("g")
 		.attr("id", "choropleth")
-		.attr("class", "visType");
+		.attr("class", "viewState");
 
 	// g elements for filled polygons + mesh on top
 	const polygons_g = g.append("g").attr("id", "polygons");
@@ -148,8 +148,8 @@ visModules.choropleth = function (container, params) {
 	return { adapt: adapt, conditions: conditions };
 };
 
-visModules.hexmap = function (container, params) {
-	let local = params.visTypes.find((d) => d.type === "hexmap");
+viewStates.hexmap = function (container, params) {
+	let local = params.viewStates.find((d) => d.type === "hexmap");
 
 	const hexAR = 0.8;
 	const hexInitSize =
@@ -161,7 +161,7 @@ visModules.hexmap = function (container, params) {
 		.select("#svg")
 		.append("g")
 		.attr("id", "hexmap")
-		.attr("class", "visType");
+		.attr("class", "viewState");
 
 	let width = hexInitSize.w;
 	let height = hexInitSize.h;
@@ -244,12 +244,12 @@ visModules.hexmap = function (container, params) {
 };
 
 // waffle chart
-visModules.wafflechart = function (container, params) {
+viewStates.wafflechart = function (container, params) {
 	const g = container
 		.select("#svg")
 		.append("g")
 		.attr("id", "wafflechart")
-		.attr("class", "visType");
+		.attr("class", "viewState");
 
 	const countries = ["Scotland", "Northern Ireland", "Wales", "England"].map(
 		(d) => ({
@@ -320,9 +320,9 @@ visModules.wafflechart = function (container, params) {
 	return { adapt: adapt, conditions: conditions };
 };
 
-visModules.circleMap = function (container, params) {
+viewStates.circleMap = function (container, params) {
 	// parameters specifically for this vis type
-	let local = params.visTypes.find((d) => d.type === "circleMap");
+	let local = params.viewStates.find((d) => d.type === "circleMap");
 	let params_local = local.params;
 
 	const projection = params_local.projection;
@@ -332,7 +332,7 @@ visModules.circleMap = function (container, params) {
 		.select("#svg")
 		.append("g")
 		.attr("id", "circleMap")
-		.attr("class", "visType");
+		.attr("class", "viewState");
 	const map = g.append("g").attr("id", "map");
 	const circles = g.append("g").attr("id", "circles");
 	const legend = g.append("g").attr("id", "legend");
@@ -463,9 +463,9 @@ visModules.circleMap = function (container, params) {
 	return { adapt: adapt, conditions: conditions };
 };
 
-visModules.circleCartogram = function (container, params) {
+viewStates.circleCartogram = function (container, params) {
 	// parameters specifically for this vis type
-	let local = params.visTypes.find((d) => d.type === "circleCartogram");
+	let local = params.viewStates.find((d) => d.type === "circleCartogram");
 	let params_local = local.params;
 
 	const projection = params_local.projection;
@@ -475,7 +475,7 @@ visModules.circleCartogram = function (container, params) {
 		.select("#svg")
 		.append("g")
 		.attr("id", "circleCartogram")
-		.attr("class", "visType");
+		.attr("class", "viewState");
 	const circles = g.append("g").attr("id", "circles");
 	const legend = g.append("g").attr("id", "legend");
 
@@ -612,9 +612,9 @@ visModules.circleCartogram = function (container, params) {
 	return { adapt: adapt, conditions: conditions };
 };
 
-visModules.geoPackedCircles = function (container, params) {
+viewStates.geoPackedCircles = function (container, params) {
 	// parameters specifically for this vis type
-	let params_local = params.visTypes.find(
+	let params_local = params.viewStates.find(
 		(d) => d.type === "geoPackedCircles"
 	).params;
 
@@ -624,7 +624,7 @@ visModules.geoPackedCircles = function (container, params) {
 		.select("#svg")
 		.append("g")
 		.attr("id", "geoPackedCircles")
-		.attr("class", "visType");
+		.attr("class", "viewState");
 
 	// doesn't really matter since it will be scaled anyway
 	// but easier to have all >0 coordinates

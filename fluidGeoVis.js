@@ -14,7 +14,7 @@ function responsiveVis(params) {
 	params.maxSize = params.maxSize ? params.maxSize : { w: 1000, h: 700 };
 	params.minSize = params.minSize ? params.minSize : { w: 50, h: 50 };
 	params.container = params.container ? params.container : "#container";
-	// throw warning if vistypes is undefined
+	// throw warning if viewStates is undefined
 
 	const con = d3
 		.select(params.container)
@@ -35,8 +35,8 @@ function responsiveVis(params) {
 	const tooltip = svg.append("text").attr("id", "tooltip");
 
 	// initalise all selected vis types
-	params.visTypes.forEach(function (d) {
-		let v = visModules[d.type](con, params);
+	params.viewStates.forEach(function (d) {
+		let v = viewStates[d.type](con, params);
 		d.adapt = v.adapt;
 		d.conditions = v.conditions;
 	});
@@ -72,11 +72,11 @@ function resizeObserver(params, adaptRules) {
 
 				// update vis
 				// check in order of priority if constraints are fulfilled
-				for (let i = 0; i < params.visTypes.length; i++) {
-					let vis = params.visTypes[i];
-					if (vis.conditions({ x: w, y: h })) {
-						displayVis(vis.type);
-						vis.adapt({ x: w, y: h });
+				for (let i = 0; i < params.viewStates.length; i++) {
+					let v = params.viewStates[i];
+					if (v.conditions({ x: w, y: h })) {
+						displayViewState(v.type);
+						v.adapt({ x: w, y: h });
 						break;
 					}
 				}
@@ -92,7 +92,7 @@ function resizeObserver(params, adaptRules) {
 }
 
 // show a specific state and hide all others
-function displayVis(vis) {
-	d3.selectAll(".visType").attr("display", "none");
-	d3.select("#" + vis).attr("display", null);
+function displayViewState(v) {
+	d3.selectAll(".viewState").attr("display", "none");
+	d3.select("#" + v).attr("display", null);
 }

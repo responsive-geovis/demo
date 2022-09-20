@@ -40,7 +40,6 @@ Promise.all([
 		"Africa",
 		"Antarctica",
 	];
-
 	const continent_colors = d3.schemeTableau10;
 
 	const colorContinent = (d) =>
@@ -59,7 +58,7 @@ Promise.all([
 
 	// initialise responsive vis with parameters
 	vis = responsiveVis({
-		visTypes: [
+		viewStates: [
 			{
 				type: "circleMap",
 				params: {
