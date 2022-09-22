@@ -57,7 +57,7 @@ Promise.all([
 		"Democratic Unionist Party",
 		"Sinn Féin",
 		"Plaid Cymru",
-		"Social Democratic & Labour Party",
+		"Social Democratic & Labour",
 		"Green",
 		"Alliance Party",
 		"Speaker",

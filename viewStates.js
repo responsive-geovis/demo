@@ -205,7 +205,7 @@ viewStates.hexmap = function (container, params) {
 	const legend = g
 		.append("g")
 		.attr("id", "legend")
-		.attr("transform", "translate(520,30)")
+		.attr("transform", "translate(460,30) scale(1.4)")
 		.call(drawLegend, params.colors, params.category_labels, params.title);
 
 	// Add the hex codes as labels
@@ -218,9 +218,13 @@ viewStates.hexmap = function (container, params) {
 	// get size of hex, check for min hex size
 
 	const adapt = function (e) {
+		// compute scale + translate so that map is always at max size, centered within the container
 		const s = hexAR > e.x / e.y ? e.x / hexInitSize.w : e.y / hexInitSize.h;
-		g.attr("transform", `scale(${s})`);
-		// d3.select(".mapMesh").style("stroke-width", `${0.5 / s}px`);
+		const t =
+			hexAR < e.x / e.y
+				? [(e.x - s * hexInitSize.w) / 2, 0]
+				: [0, (e.y - s * hexInitSize.h) / 2];
+		g.attr("transform", `translate(${t[0]},${t[1]}) scale(${s})`);
 	};
 
 	const conditions = function (e) {
